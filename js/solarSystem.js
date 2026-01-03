@@ -123,10 +123,19 @@ class SolarSystem {
     }
 
     createRenderer() {
+        // Check WebGL support
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+        if (!gl) {
+            throw new Error('WebGL is not supported. Please use a modern browser or enable hardware acceleration.');
+        }
+
         this.renderer = new THREE.WebGLRenderer({
             antialias: this.qualitySetting !== 'low',
             alpha: true,
-            powerPreference: 'high-performance'
+            powerPreference: 'default', // Changed from high-performance for better compatibility
+            failIfMajorPerformanceCaveat: false // Allow software rendering
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
