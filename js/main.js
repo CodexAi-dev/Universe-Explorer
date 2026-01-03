@@ -139,11 +139,6 @@ function init() {
         console.log('Creating UIController...');
         uiController = new UIController(solarSystem);
 
-        // Create tour controller
-        console.log('Creating TourController...');
-        tourController = new TourController(solarSystem, uiController);
-        window.tourController = tourController; // Make accessible globally
-
         // Load saved preferences
         loadPreferences();
 
