@@ -2241,6 +2241,57 @@ class SolarSystem {
         this.renderer.domElement.addEventListener('mousemove', (e) => this.onMouseMove(e));
         this.renderer.domElement.addEventListener('click', (e) => this.onClick(e));
         this.renderer.domElement.addEventListener('dblclick', (e) => this.onDoubleClick(e));
+
+        // Mobile touch events
+        this.renderer.domElement.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+        this.renderer.domElement.addEventListener('touchend', (e) => this.onTouchEnd(e), { passive: false });
+
+        // Track touch timing for tap vs double-tap
+        this.lastTapTime = 0;
+        this.touchStartTime = 0;
+    }
+
+    onTouchStart(event) {
+        this.touchStartTime = Date.now();
+
+        // Get touch position
+        if (event.touches.length === 1) {
+            const touch = event.touches[0];
+            this.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            const objects = [this.sun, ...Object.values(this.planets)].filter(o => o);
+            const intersects = this.raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                const object = intersects[0].object;
+                if (object.userData.isPlanet) {
+                    this.hoveredPlanet = object;
+                }
+            } else {
+                this.hoveredPlanet = null;
+            }
+        }
+    }
+
+    onTouchEnd(event) {
+        const touchDuration = Date.now() - this.touchStartTime;
+        const currentTime = Date.now();
+        const timeSinceLastTap = currentTime - this.lastTapTime;
+
+        // Only process as tap if touch was short (not a drag)
+        if (touchDuration < 300) {
+            if (timeSinceLastTap < 300 && this.hoveredPlanet) {
+                // Double tap - focus on planet
+                this.focusOnPlanet(this.hoveredPlanet.name);
+                this.lastTapTime = 0;
+            } else if (this.hoveredPlanet) {
+                // Single tap - select planet
+                this.selectPlanet(this.hoveredPlanet.name);
+                this.lastTapTime = currentTime;
+            }
+        }
     }
 
     onResize() {

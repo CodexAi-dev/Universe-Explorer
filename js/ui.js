@@ -497,7 +497,20 @@ class UIController {
     togglePanel(event) {
         const panelId = event.currentTarget.dataset.panel;
         const panel = document.getElementById(`${panelId}-panel`);
-        panel.classList.toggle('collapsed');
+
+        // On mobile, toggle 'open' class instead of 'collapsed'
+        if (window.innerWidth <= 768) {
+            // Close other panel first
+            const otherPanelId = panelId === 'left' ? 'right' : 'left';
+            const otherPanel = document.getElementById(`${otherPanelId}-panel`);
+            if (otherPanel) {
+                otherPanel.classList.remove('open');
+            }
+
+            panel.classList.toggle('open');
+        } else {
+            panel.classList.toggle('collapsed');
+        }
 
         const icon = event.currentTarget.querySelector('i');
         if (panelId === 'left') {

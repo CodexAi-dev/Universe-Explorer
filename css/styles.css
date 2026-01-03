@@ -2997,3 +2997,621 @@ input:focus-visible {
 .btn-fact:hover i {
     transform: rotate(180deg);
 }
+
+/* ==========================================
+   MOBILE RESPONSIVE - COMPLETE OVERHAUL
+   ========================================== */
+
+/* Tablet Landscape */
+@media (max-width: 1024px) {
+    .countdown-display {
+        font-size: 4rem;
+    }
+
+    .countdown-prefix {
+        font-size: 2.5rem;
+    }
+
+    .shuttle {
+        transform: scale(0.9);
+    }
+
+    .earth {
+        width: 600px;
+        height: 600px;
+        bottom: -200px;
+    }
+}
+
+/* Tablet Portrait */
+@media (max-width: 768px) {
+
+    /* Loading Screen Mobile */
+    .countdown-display {
+        font-size: 3.5rem;
+    }
+
+    .countdown-prefix {
+        font-size: 2rem;
+    }
+
+    .countdown-number.liftoff {
+        font-size: 2rem;
+    }
+
+    .countdown-container {
+        bottom: 10%;
+    }
+
+    .mission-badge {
+        padding: 8px 16px;
+        gap: 8px;
+    }
+
+    .mission-badge span {
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+
+    .mission-progress {
+        width: 250px;
+    }
+
+    .countdown-status {
+        font-size: 1rem;
+        letter-spacing: 2px;
+    }
+
+    .shuttle-container {
+        transform: translateX(-50%) scale(0.8);
+    }
+
+    .earth {
+        width: 500px;
+        height: 500px;
+        bottom: -180px;
+    }
+
+    .launch-tower {
+        height: 140px;
+    }
+
+    .galaxy-spiral {
+        width: 300px;
+        height: 300px;
+    }
+
+    .nebula-glow {
+        width: 150px;
+        height: 100px;
+    }
+
+    /* Header Mobile */
+    #top-bar {
+        padding: 0 12px;
+        height: 50px;
+    }
+
+    .logo {
+        font-size: 1rem;
+        gap: 8px;
+    }
+
+    .logo i {
+        font-size: 1.2rem;
+    }
+
+    .header-controls {
+        gap: 5px;
+    }
+
+    .header-controls button {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+
+    /* Panels Mobile - Slide from bottom */
+    #left-panel,
+    #right-panel {
+        width: 100%;
+        max-width: 100%;
+        height: 55vh;
+        top: auto;
+        bottom: 80px;
+        left: 0;
+        right: 0;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+
+    #left-panel.open,
+    #right-panel.open {
+        transform: translateY(0);
+    }
+
+    .panel-header {
+        padding: 12px 16px;
+    }
+
+    .panel-header h3 {
+        font-size: 1rem;
+    }
+
+    .panel-content {
+        padding: 12px;
+    }
+
+    .control-section h4 {
+        font-size: 0.85rem;
+    }
+
+    /* Toggle Switches Mobile */
+    .toggle-switch {
+        padding: 8px 0;
+    }
+
+    .label-text {
+        font-size: 0.85rem;
+    }
+
+    /* Planet Selector Mobile */
+    #planet-selector {
+        padding: 8px;
+        gap: 6px;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    #planet-selector::-webkit-scrollbar {
+        display: none;
+    }
+
+    .planet-btn {
+        padding: 8px;
+        min-width: 44px;
+        flex-shrink: 0;
+    }
+
+    .planet-btn span {
+        display: none;
+    }
+
+    .planet-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Time Control Panel Mobile */
+    #time-control-panel {
+        height: 70px;
+        padding: 8px 12px;
+        gap: 12px;
+    }
+
+    .time-display {
+        min-width: auto;
+        flex: 0 0 auto;
+    }
+
+    .current-date {
+        font-size: 0.75rem;
+    }
+
+    .current-speed {
+        font-size: 0.7rem;
+    }
+
+    .time-controls {
+        gap: 6px;
+    }
+
+    .time-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .time-btn.play-btn {
+        width: 46px;
+        height: 46px;
+    }
+
+    /* Universe Scale Selector Mobile */
+    .universe-scale-selector {
+        top: 55px;
+        padding: 4px;
+        gap: 2px;
+        max-width: 95vw;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .scale-btn {
+        padding: 8px 12px;
+        min-width: auto;
+        flex-shrink: 0;
+    }
+
+    .scale-btn span {
+        display: none;
+    }
+
+    .scale-btn i {
+        font-size: 1rem;
+    }
+
+    /* Floating Buttons Mobile */
+    .floating-btn {
+        bottom: 90px;
+        right: 10px;
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+
+    /* Modals Mobile */
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        max-height: 80vh;
+        margin: 10vh auto;
+        border-radius: 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    /* Info Grid Mobile */
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .info-item {
+        padding: 10px;
+    }
+
+    /* Tour Mobile */
+    .tour-tooltip {
+        max-width: 280px;
+        padding: 16px;
+    }
+
+    .tour-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .tour-controls button {
+        width: 100%;
+    }
+}
+
+/* Mobile Portrait */
+@media (max-width: 480px) {
+
+    /* Loading Screen Small Mobile */
+    .countdown-display {
+        font-size: 2.5rem;
+    }
+
+    .countdown-prefix {
+        font-size: 1.5rem;
+    }
+
+    .countdown-number.liftoff {
+        font-size: 1.5rem;
+    }
+
+    .countdown-container {
+        bottom: 8%;
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .mission-badge {
+        padding: 6px 12px;
+    }
+
+    .mission-badge i {
+        font-size: 1rem;
+    }
+
+    .mission-badge span {
+        font-size: 0.65rem;
+    }
+
+    .mission-progress {
+        width: 200px;
+    }
+
+    .countdown-status {
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+
+    .shuttle-container {
+        transform: translateX(-50%) scale(0.6);
+    }
+
+    .earth {
+        width: 400px;
+        height: 400px;
+        bottom: -150px;
+    }
+
+    .launch-tower {
+        height: 100px;
+        left: -40px;
+        width: 14px;
+    }
+
+    .launch-platform {
+        width: 140px;
+        left: -70px;
+    }
+
+    .galaxy-spiral {
+        width: 200px;
+        height: 200px;
+    }
+
+    /* Header Small Mobile */
+    #top-bar {
+        padding: 0 8px;
+        height: 46px;
+    }
+
+    .logo span {
+        display: none;
+    }
+
+    .logo i {
+        font-size: 1.4rem;
+    }
+
+    .header-controls button {
+        width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+
+    /* Panels Small Mobile */
+    #left-panel,
+    #right-panel {
+        height: 60vh;
+        bottom: 70px;
+    }
+
+    .panel-header {
+        padding: 10px 12px;
+    }
+
+    /* Planet Selector Small Mobile */
+    #planet-selector {
+        bottom: 75px;
+        padding: 6px;
+        gap: 4px;
+    }
+
+    .planet-btn {
+        padding: 6px;
+        min-width: 40px;
+    }
+
+    .planet-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Time Panel Small Mobile */
+    #time-control-panel {
+        height: 65px;
+        padding: 6px 8px;
+        gap: 8px;
+    }
+
+    .time-display {
+        display: none;
+    }
+
+    .time-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .time-btn.play-btn {
+        width: 42px;
+        height: 42px;
+    }
+
+    /* Universe Scale Small Mobile */
+    .universe-scale-selector {
+        top: 50px;
+        padding: 3px;
+    }
+
+    .scale-btn {
+        padding: 6px 10px;
+    }
+
+    .scale-btn i {
+        font-size: 0.9rem;
+    }
+
+    /* Floating Button Small Mobile */
+    .floating-btn {
+        bottom: 80px;
+        right: 8px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    /* Modals Small Mobile */
+    .modal-content {
+        width: 98%;
+        max-height: 85vh;
+        margin: 7vh auto;
+    }
+
+    .modal-header {
+        padding: 12px 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 1.1rem;
+    }
+
+    /* Surface View Button Mobile */
+    .surface-view-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 360px) {
+    .countdown-display {
+        font-size: 2rem;
+    }
+
+    .countdown-prefix {
+        font-size: 1.2rem;
+    }
+
+    .mission-badge span {
+        font-size: 0.6rem;
+    }
+
+    .mission-progress {
+        width: 160px;
+    }
+
+    .shuttle-container {
+        transform: translateX(-50%) scale(0.5);
+    }
+
+    .earth {
+        width: 350px;
+        height: 350px;
+        bottom: -130px;
+    }
+
+    #time-control-panel {
+        gap: 5px;
+    }
+
+    .time-btn {
+        width: 30px;
+        height: 30px;
+    }
+
+    .time-btn.play-btn {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .countdown-container {
+        bottom: 5%;
+    }
+
+    .countdown-display {
+        font-size: 2.5rem;
+    }
+
+    .mission-badge {
+        margin-bottom: 10px;
+    }
+
+    .countdown-status {
+        margin-bottom: 10px;
+    }
+
+    .earth {
+        bottom: -250px;
+    }
+
+    .shuttle-container {
+        bottom: 100px;
+        transform: translateX(-50%) scale(0.6);
+    }
+
+    #left-panel,
+    #right-panel {
+        height: 70vh;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Larger touch targets */
+    .planet-btn,
+    .scale-btn,
+    .time-btn,
+    .header-controls button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Remove hover effects that don't work on touch */
+    .planet-btn:hover,
+    .scale-btn:hover,
+    .time-btn:hover {
+        transform: none;
+    }
+
+    /* Active states for touch */
+    .planet-btn:active,
+    .scale-btn:active,
+    .time-btn:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    /* Disable hover tooltips */
+    [title] {
+        pointer-events: auto;
+    }
+
+    /* Better scrolling */
+    .panel-content {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Prevent text selection on touch */
+    .planet-btn,
+    .scale-btn,
+    .time-btn {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+}
+
+/* PWA Safe Areas (notch handling) */
+@supports (padding: max(0px)) {
+    #top-bar {
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+        padding-top: env(safe-area-inset-top);
+    }
+
+    #time-control-panel {
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+
+    #planet-selector {
+        padding-left: max(8px, env(safe-area-inset-left));
+        padding-right: max(8px, env(safe-area-inset-right));
+    }
+}
