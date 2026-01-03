@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Interactive 3D Universe Explorer - Explore the Solar System, galaxies, nebulae, and the cosmos">
+    <meta name="keywords"
+        content="universe, solar system, planets, galaxies, nebulae, astronomy, 3D visualization, space">
+    <title>Universe Explorer | Interactive 3D Cosmic Visualization</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Space Shuttle Launch Loading Screen -->
+    <div id="loading-screen">
+        <!-- Stars Background -->
+        <div class="space-bg">
+            <div class="stars-layer stars-small"></div>
+            <div class="stars-layer stars-medium"></div>
+            <div class="stars-layer stars-large"></div>
+        </div>
+
+        <!-- Earth Scene -->
+        <div class="earth-scene">
+            <div class="earth">
+                <div class="earth-atmosphere"></div>
+                <div class="earth-clouds"></div>
+            </div>
+            <div class="launch-pad">
+                <div class="launch-tower"></div>
+                <div class="launch-platform"></div>
+            </div>
+        </div>
+
+        <!-- Space Shuttle -->
+        <div class="shuttle-container">
+            <div class="shuttle">
+                <div class="shuttle-nose"></div>
+                <div class="shuttle-body"></div>
+                <div class="shuttle-wing-left"></div>
+                <div class="shuttle-wing-right"></div>
+                <div class="shuttle-tail"></div>
+                <div class="shuttle-window"></div>
+                <div class="shuttle-boosters">
+                    <div class="booster left-booster"></div>
+                    <div class="booster right-booster"></div>
+                </div>
+                <div class="external-tank"></div>
+            </div>
+            <div class="exhaust-flames">
+                <div class="flame flame-main"></div>
+                <div class="flame flame-left"></div>
+                <div class="flame flame-right"></div>
+            </div>
+            <div class="smoke-trail"></div>
+        </div>
+
+        <!-- Universe Reveal -->
+        <div class="universe-reveal">
+            <div class="galaxy-spiral"></div>
+            <div class="nebula-glow"></div>
+            <div class="cosmic-rays"></div>
+        </div>
+
+        <!-- Countdown Display -->
+        <div class="countdown-container">
+            <div class="mission-badge">
+                <i class="fas fa-rocket"></i>
+                <span>MISSION: UNIVERSE EXPLORER</span>
+            </div>
+            <div class="countdown-display">
+                <span class="countdown-prefix">T-</span>
+                <span class="countdown-number">9</span>
+            </div>
+            <div class="countdown-status">AWAITING LAUNCH</div>
+            <div class="mission-progress">
+                <div class="mission-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app-container">
+        <!-- Three.js Canvas -->
+        <div id="canvas-container"></div>
+
+        <!-- Top Header Bar -->
+        <header id="top-bar">
+            <div class="logo">
+                <i class="fas fa-globe-americas"></i>
+                <span>Universe Explorer</span>
+            </div>
+            <!-- Universe Scale Selector -->
+            <div class="universe-scale-selector">
+                <button class="scale-btn active" data-view="solarSystem" title="Solar System">
+                    <i class="fas fa-sun"></i>
+                    <span>Solar System</span>
+                </button>
+                <button class="scale-btn" data-view="interstellar" title="Interstellar">
+                    <i class="fas fa-star"></i>
+                    <span>Interstellar</span>
+                </button>
+                <button class="scale-btn" data-view="galactic" title="Galactic">
+                    <i class="fas fa-circle-notch"></i>
+                    <span>Galactic</span>
+                </button>
+                <button class="scale-btn" data-view="intergalactic" title="Intergalactic">
+                    <i class="fas fa-atom"></i>
+                    <span>Intergalactic</span>
+                </button>
+                <button class="scale-btn" data-view="cosmic" title="Cosmic">
+                    <i class="fas fa-infinity"></i>
+                    <span>Cosmic</span>
+                </button>
+            </div>
+            <div class="header-controls">
+                <button id="btn-screenshot" title="Take Screenshot">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <button id="btn-fullscreen" title="Fullscreen">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button id="btn-settings" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="btn-help" title="Help">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Left Control Panel -->
+        <aside id="left-panel" class="panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-sliders-h"></i> Controls</h3>
+                <button class="panel-toggle" data-panel="left">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div class="panel-content">
+                <!-- View Controls -->
+                <div class="control-section">
+                    <h4><i class="fas fa-eye"></i> View Options</h4>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-orbits" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Show Orbits</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-labels" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Show Labels</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-moons">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Moons</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-stars" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Background Stars</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-asteroid-belt">
+                            <span class="slider"></span>
+                            <span class="label-text">Asteroid Belt</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-pluto">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Pluto</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Universe Objects -->
+                <div class="control-section universe-section">
+                    <h4><i class="fas fa-galaxy"></i> Universe Objects</h4>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-nebulae">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Nebulae</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-galaxies">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Galaxies</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-milkyway">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Milky Way</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-blackholes">
+                            <span class="slider"></span>
+                            <span class="label-text">Show Black Holes</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Space Objects -->
+                <div class="control-section space-objects-section">
+                    <h4><i class="fas fa-satellite"></i> Space Objects</h4>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-satellites" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Satellites (ISS, Hubble)</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-alien-ships" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Alien Ships</span>
+                        </label>
+                    </div>
+                    <div class="control-group">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-comets" checked>
+                            <span class="slider"></span>
+                            <span class="label-text">Comets & Meteors</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Scale Controls -->
+                <div class="control-section">
+                    <h4><i class="fas fa-expand-arrows-alt"></i> Scale</h4>
+                    <div class="control-group">
+                        <label>Distance Scale</label>
+                        <select id="distance-scale">
+                            <option value="logarithmic">Logarithmic</option>
+                            <option value="linear">Linear</option>
+                            <option value="realistic">Realistic</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Planet Size</label>
+                        <input type="range" id="planet-size" min="1" max="10" value="5">
+                        <span class="range-value">5x</span>
+                    </div>
+                </div>
+
+                <!-- Camera Controls -->
+                <div class="control-section">
+                    <h4><i class="fas fa-video"></i> Camera</h4>
+                    <div class="button-group">
+                        <button id="btn-reset-camera" class="btn-secondary">
+                            <i class="fas fa-sync"></i> Reset View
+                        </button>
+                        <button id="btn-auto-orbit" class="btn-secondary">
+                            <i class="fas fa-circle-notch"></i> Auto Orbit
+                        </button>
+                    </div>
+                    <div class="control-group">
+                        <label>View Mode</label>
+                        <select id="view-mode">
+                            <option value="3d">3D View</option>
+                            <option value="top">Top-Down (2D)</option>
+                            <option value="side">Side View</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quality Settings -->
+                <div class="control-section">
+                    <h4><i class="fas fa-tachometer-alt"></i> Performance</h4>
+                    <div class="control-group">
+                        <label>Quality</label>
+                        <select id="quality-setting">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="ultra">Ultra</option>
+                        </select>
+                    </div>
+                    <div class="fps-display">
+                        <span>FPS: </span><span id="fps-counter">60</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Info Panel -->
+        <aside id="right-panel" class="panel">
+            <div class="panel-header">
+                <h3><i class="fas fa-info-circle"></i> Info Panel</h3>
+                <button class="panel-toggle" data-panel="right">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="panel-content">
+                <!-- Tab Navigation -->
+                <div class="info-tabs">
+                    <button class="info-tab active" data-tab="planets">
+                        <i class="fas fa-globe"></i> Planets
+                    </button>
+                    <button class="info-tab" data-tab="deepspace">
+                        <i class="fas fa-star-of-life"></i> Deep Space
+                    </button>
+                </div>
+
+                <!-- Planet Info Tab -->
+                <div id="planets-info" class="tab-content active">
+                    <div class="planet-info-placeholder">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <p>Click on a planet to view details</p>
+                    </div>
+                    <div class="planet-details" style="display: none;">
+                        <div class="planet-header">
+                            <div class="planet-icon" id="selected-planet-icon"></div>
+                            <div class="planet-title">
+                                <h2 id="planet-name">Earth</h2>
+                                <span id="planet-type" class="planet-tag">Terrestrial</span>
+                            </div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-ruler"></i>
+                                <div>
+                                    <span class="info-label">Diameter</span>
+                                    <span class="info-value" id="planet-diameter">12,742 km</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-weight-hanging"></i>
+                                <div>
+                                    <span class="info-label">Mass</span>
+                                    <span class="info-value" id="planet-mass">5.97 × 10²⁴ kg</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-arrow-down"></i>
+                                <div>
+                                    <span class="info-label">Gravity</span>
+                                    <span class="info-value" id="planet-gravity">9.8 m/s²</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <span class="info-label">Orbital Period</span>
+                                    <span class="info-value" id="planet-orbital">365.25 days</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-route"></i>
+                                <div>
+                                    <span class="info-label">Distance from Sun</span>
+                                    <span class="info-value" id="planet-distance">149.6M km</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-moon"></i>
+                                <div>
+                                    <span class="info-label">Moons</span>
+                                    <span class="info-value" id="planet-moons">1</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-thermometer-half"></i>
+                                <div>
+                                    <span class="info-label">Temperature</span>
+                                    <span class="info-value" id="planet-temp">-88 to 58°C</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-sync-alt"></i>
+                                <div>
+                                    <span class="info-label">Day Length</span>
+                                    <span class="info-value" id="planet-day">24 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="planet-description">
+                            <h4>About</h4>
+                            <p id="planet-description-text">Earth is the third planet from the Sun and the only
+                                astronomical object known to harbor life.</p>
+                        </div>
+                        <div class="planet-actions">
+                            <button id="btn-focus-planet" class="btn-primary">
+                                <i class="fas fa-crosshairs"></i> Focus
+                            </button>
+                            <button id="btn-surface-view" class="btn-primary surface-view-btn">
+                                <i class="fas fa-search-plus"></i> Surface View
+                            </button>
+                            <button id="btn-compare-planet" class="btn-secondary">
+                                <i class="fas fa-balance-scale"></i> Compare
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deep Space Info Tab -->
+                <div id="deepspace-info" class="tab-content">
+                    <div class="deepspace-placeholder">
+                        <i class="fas fa-satellite"></i>
+                        <p>Select a deep space object to view details</p>
+                    </div>
+                    <div class="deepspace-details" style="display: none;">
+                        <div class="deepspace-header">
+                            <div class="deepspace-icon" id="selected-deepspace-icon">
+                                <i class="fas fa-star-of-life"></i>
+                            </div>
+                            <div class="deepspace-title">
+                                <h2 id="deepspace-name">Andromeda Galaxy</h2>
+                                <span id="deepspace-type" class="deepspace-tag">Spiral Galaxy</span>
+                            </div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fas fa-ruler-combined"></i>
+                                <div>
+                                    <span class="info-label">Distance</span>
+                                    <span class="info-value" id="deepspace-distance">2.5M light-years</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                                <div>
+                                    <span class="info-label">Diameter</span>
+                                    <span class="info-value" id="deepspace-diameter">220,000 ly</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-star"></i>
+                                <div>
+                                    <span class="info-label">Stars</span>
+                                    <span class="info-value" id="deepspace-stars">1 trillion</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-compass"></i>
+                                <div>
+                                    <span class="info-label">Constellation</span>
+                                    <span class="info-value" id="deepspace-constellation">Andromeda</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deepspace-description">
+                            <h4>About</h4>
+                            <p id="deepspace-description-text">The Andromeda Galaxy is the nearest large galaxy to the
+                                Milky Way.</p>
+                        </div>
+                        <div class="deepspace-facts">
+                            <h4>Key Facts</h4>
+                            <ul id="deepspace-facts-list">
+                                <li>Contains approximately 1 trillion stars</li>
+                            </ul>
+                        </div>
+                        <div class="deepspace-actions">
+                            <button id="btn-focus-deepspace" class="btn-primary">
+                                <i class="fas fa-crosshairs"></i> Navigate
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Deep Space Object Selector -->
+                    <div class="deepspace-selector">
+                        <h4><i class="fas fa-list"></i> Quick Select</h4>
+                        <div class="deepspace-category">
+                            <h5>Galaxies</h5>
+                            <div class="deepspace-buttons" id="galaxy-buttons">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        <div class="deepspace-category">
+                            <h5>Nebulae</h5>
+                            <div class="deepspace-buttons" id="nebula-buttons">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        <div class="deepspace-category">
+                            <h5>Black Holes</h5>
+                            <div class="deepspace-buttons" id="blackhole-buttons">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Space Facts Widget -->
+                <div class="space-facts-widget">
+                    <div class="facts-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Did You Know?</span>
+                    </div>
+                    <div class="facts-content">
+                        <p id="space-fact-text">Loading amazing space fact...</p>
+                    </div>
+                    <button id="btn-next-fact" class="btn-fact">
+                        <i class="fas fa-random"></i> Another Fact
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Bottom Time Control Panel -->
+        <div id="time-control-panel">
+            <div class="time-display">
+                <span class="current-date" id="simulation-date">December 30, 2025</span>
+                <span class="time-speed" id="time-speed-display">1× Speed</span>
+            </div>
+            <div class="time-controls">
+                <button id="btn-reverse" class="time-btn" title="Reverse Time">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button id="btn-slower" class="time-btn" title="Slower">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button id="btn-play-pause" class="time-btn play-btn" title="Play/Pause">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button id="btn-faster" class="time-btn" title="Faster">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+                <button id="btn-realtime" class="time-btn" title="Real-time">
+                    <i class="fas fa-clock"></i>
+                </button>
+                <button id="btn-reset-time" class="time-btn" title="Reset to Today">
+                    <i class="fas fa-undo"></i>
+                </button>
+            </div>
+            <div class="speed-slider">
+                <label>Speed:</label>
+                <input type="range" id="time-speed-slider" min="-3" max="4" value="0" step="1">
+                <span class="speed-labels">
+                    <span>0.1×</span>
+                    <span>1×</span>
+                    <span>1000×</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Planet Quick Select -->
+        <div id="planet-selector">
+            <button class="planet-btn" data-planet="sun" title="Sun">
+                <div class="planet-icon sun"></div>
+                <span>Sun</span>
+            </button>
+            <button class="planet-btn" data-planet="mercury" title="Mercury">
+                <div class="planet-icon mercury"></div>
+                <span>Mercury</span>
+            </button>
+            <button class="planet-btn" data-planet="venus" title="Venus">
+                <div class="planet-icon venus"></div>
+                <span>Venus</span>
+            </button>
+            <button class="planet-btn" data-planet="earth" title="Earth">
+                <div class="planet-icon earth"></div>
+                <span>Earth</span>
+            </button>
+            <button class="planet-btn" data-planet="mars" title="Mars">
+                <div class="planet-icon mars"></div>
+                <span>Mars</span>
+            </button>
+            <button class="planet-btn" data-planet="jupiter" title="Jupiter">
+                <div class="planet-icon jupiter"></div>
+                <span>Jupiter</span>
+            </button>
+            <button class="planet-btn" data-planet="saturn" title="Saturn">
+                <div class="planet-icon saturn"></div>
+                <span>Saturn</span>
+            </button>
+            <button class="planet-btn" data-planet="uranus" title="Uranus">
+                <div class="planet-icon uranus"></div>
+                <span>Uranus</span>
+            </button>
+            <button class="planet-btn" data-planet="neptune" title="Neptune">
+                <div class="planet-icon neptune"></div>
+                <span>Neptune</span>
+            </button>
+        </div>
+
+        <!-- Hover Tooltip -->
+        <div id="hover-tooltip" class="tooltip" style="display: none;">
+            <div class="tooltip-content">
+                <span class="tooltip-name">Earth</span>
+                <span class="tooltip-info">149.6M km from Sun</span>
+                <span class="tooltip-info">Orbital Speed: 29.78 km/s</span>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-cog"></i> Settings</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h3>Theme</h3>
+                        <div class="theme-options">
+                            <button class="theme-btn active" data-theme="space">
+                                <i class="fas fa-star"></i> Space
+                            </button>
+                            <button class="theme-btn" data-theme="dark">
+                                <i class="fas fa-moon"></i> Dark
+                            </button>
+                            <button class="theme-btn" data-theme="educational">
+                                <i class="fas fa-graduation-cap"></i> Educational
+                            </button>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Units</h3>
+                        <div class="control-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-units">
+                                <span class="slider"></span>
+                                <span class="label-text">Use Imperial Units</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Accessibility</h3>
+                        <div class="control-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-high-contrast">
+                                <span class="slider"></span>
+                                <span class="label-text">High Contrast Mode</span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <label>Text Size</label>
+                            <select id="text-size">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3>Mode</h3>
+                        <div class="control-group">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-advanced-mode">
+                                <span class="slider"></span>
+                                <span class="label-text">Advanced Mode</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-question-circle"></i> Help & Controls</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h3><i class="fas fa-mouse"></i> Mouse Controls</h3>
+                        <ul>
+                            <li><strong>Left Click + Drag:</strong> Rotate camera</li>
+                            <li><strong>Right Click + Drag:</strong> Pan camera</li>
+                            <li><strong>Scroll:</strong> Zoom in/out</li>
+                            <li><strong>Click on Planet:</strong> Select and view info</li>
+                            <li><strong>Double Click:</strong> Focus on planet</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+                        <ul>
+                            <li><strong>Space:</strong> Play/Pause simulation</li>
+                            <li><strong>R:</strong> Reset camera view</li>
+                            <li><strong>O:</strong> Toggle orbits</li>
+                            <li><strong>L:</strong> Toggle labels</li>
+                            <li><strong>+/-:</strong> Speed up/slow down time</li>
+                            <li><strong>1-9:</strong> Select planet (1=Sun, 9=Neptune)</li>
+                            <li><strong>F:</strong> Toggle fullscreen</li>
+                            <li><strong>H:</strong> Toggle this help</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3><i class="fas fa-lightbulb"></i> Tips</h3>
+                        <ul>
+                            <li>Use the planet selector at the bottom to quickly navigate</li>
+                            <li>Adjust time speed to observe orbital patterns</li>
+                            <li>Toggle logarithmic scale for better visualization</li>
+                            <li>Enable moons to see Earth's Moon and other satellites</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Modal -->
+        <div id="comparison-modal" class="modal" style="display: none;">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2><i class="fas fa-balance-scale"></i> Planet Comparison</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="comparison-selectors">
+                        <div class="comparison-select">
+                            <label>Planet 1</label>
+                            <select id="compare-planet-1">
+                                <option value="earth">Earth</option>
+                            </select>
+                        </div>
+                        <div class="comparison-vs">VS</div>
+                        <div class="comparison-select">
+                            <label>Planet 2</label>
+                            <select id="compare-planet-2">
+                                <option value="mars">Mars</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="comparison-visual">
+                        <div class="comparison-planet" id="compare-visual-1"></div>
+                        <div class="comparison-planet" id="compare-visual-2"></div>
+                    </div>
+                    <div class="comparison-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th id="compare-name-1">Earth</th>
+                                    <th id="compare-name-2">Mars</th>
+                                    <th>Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-tbody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tour Modal -->
+        <div id="tour-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-rocket"></i> Solar System Tour</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="tour-content">
+                        <div class="tour-planet-image" id="tour-planet-image"></div>
+                        <h3 id="tour-planet-name">Welcome to the Solar System</h3>
+                        <p id="tour-planet-text">Embark on a journey through our cosmic neighborhood. You'll visit the
+                            Sun and all eight planets, learning fascinating facts about each celestial body.</p>
+                        <div class="tour-progress">
+                            <div class="tour-progress-bar">
+                                <div class="tour-progress-fill" id="tour-progress-fill"></div>
+                            </div>
+                            <span id="tour-progress-text">0 / 9</span>
+                        </div>
+                    </div>
+                    <div class="tour-controls">
+                        <button id="btn-tour-prev" class="btn-secondary" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button id="btn-tour-start" class="btn-primary">
+                            <i class="fas fa-play"></i> Start Tour
+                        </button>
+                        <button id="btn-tour-next" class="btn-secondary" disabled>
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tour Button -->
+        <button id="btn-start-tour" class="floating-btn" title="Start Guided Tour">
+            <i class="fas fa-rocket"></i>
+            <span>Tour</span>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="js/planetData.js"></script>
+    <script src="js/universeData.js"></script>
+    <script src="js/spaceObjects.js"></script>
+    <script src="js/solarSystem.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/tour.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
