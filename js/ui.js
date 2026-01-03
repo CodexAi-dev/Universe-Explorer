@@ -325,6 +325,316 @@ class UIController {
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+        // Mobile Navigation
+        this.initMobileNavigation();
+    }
+
+    initMobileNavigation() {
+        const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn');
+        const mobileOverlay = document.getElementById('mobile-nav-overlay');
+
+        if (!mobileNavBtns.length) return;
+
+        // Mobile nav button actions
+        mobileNavBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+
+                // Remove active from all buttons
+                mobileNavBtns.forEach(b => b.classList.remove('active'));
+
+                switch (action) {
+                    case 'controls':
+                        this.toggleMobilePanel('left');
+                        btn.classList.add('active');
+                        break;
+                    case 'info':
+                        this.toggleMobilePanel('right');
+                        btn.classList.add('active');
+                        break;
+                    case 'time':
+                        this.showMobileTimeControls();
+                        btn.classList.add('active');
+                        break;
+                    case 'more':
+                        this.showMobileMoreMenu();
+                        btn.classList.add('active');
+                        break;
+                }
+            });
+        });
+
+        // Close panels when clicking overlay
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', () => {
+                this.closeAllMobilePanels();
+                mobileNavBtns.forEach(b => b.classList.remove('active'));
+            });
+        }
+    }
+
+    toggleMobilePanel(panelId) {
+        const panel = document.getElementById(`${panelId}-panel`);
+        const overlay = document.getElementById('mobile-nav-overlay');
+        const otherPanelId = panelId === 'left' ? 'right' : 'left';
+        const otherPanel = document.getElementById(`${otherPanelId}-panel`);
+
+        if (!panel) return;
+
+        // Close other panel
+        if (otherPanel) {
+            otherPanel.classList.remove('open');
+        }
+
+        // Toggle this panel
+        const isOpen = panel.classList.toggle('open');
+
+        // Toggle overlay
+        if (overlay) {
+            overlay.classList.toggle('active', isOpen);
+        }
+    }
+
+    closeAllMobilePanels() {
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        const overlay = document.getElementById('mobile-nav-overlay');
+
+        if (leftPanel) leftPanel.classList.remove('open');
+        if (rightPanel) rightPanel.classList.remove('open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    showMobileTimeControls() {
+        // Create mobile time control modal if not exists
+        let timeModal = document.getElementById('mobile-time-modal');
+
+        if (!timeModal) {
+            timeModal = document.createElement('div');
+            timeModal.id = 'mobile-time-modal';
+            timeModal.className = 'modal';
+            timeModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-clock"></i> Time Controls</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mobile-time-display">
+                            <span class="current-date" id="mobile-simulation-date">${this.simulationDate.textContent}</span>
+                            <span class="time-speed" id="mobile-time-speed">${this.timeSpeedDisplay.textContent}</span>
+                        </div>
+                        <div class="time-controls" style="display: flex; justify-content: center; gap: 10px; margin: 20px 0;">
+                            <button class="time-btn" data-action="reverse" title="Reverse Time">
+                                <i class="fas fa-backward"></i>
+                            </button>
+                            <button class="time-btn" data-action="slower" title="Slower">
+                                <i class="fas fa-step-backward"></i>
+                            </button>
+                            <button class="time-btn play-btn" data-action="play-pause" title="Play/Pause">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button class="time-btn" data-action="faster" title="Faster">
+                                <i class="fas fa-step-forward"></i>
+                            </button>
+                            <button class="time-btn" data-action="realtime" title="Real-time">
+                                <i class="fas fa-clock"></i>
+                            </button>
+                        </div>
+                        <div class="speed-presets" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px;">
+                            <button class="btn-secondary" data-speed="0.1">0.1×</button>
+                            <button class="btn-secondary" data-speed="1">1×</button>
+                            <button class="btn-secondary" data-speed="100">100×</button>
+                            <button class="btn-secondary" data-speed="1000">1000×</button>
+                        </div>
+                        <button class="btn-primary" data-action="reset" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-undo"></i> Reset to Today
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(timeModal);
+
+            // Bind time modal events
+            timeModal.querySelector('.modal-close').addEventListener('click', () => {
+                timeModal.style.display = 'none';
+            });
+            timeModal.addEventListener('click', (e) => {
+                if (e.target === timeModal) timeModal.style.display = 'none';
+            });
+
+            // Time control buttons
+            timeModal.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    switch (action) {
+                        case 'reverse': this.reverseTime(); break;
+                        case 'slower': this.decreaseSpeed(); break;
+                        case 'play-pause': this.togglePlayPause(); break;
+                        case 'faster': this.increaseSpeed(); break;
+                        case 'realtime': this.setRealtime(); break;
+                    }
+                    this.updateMobileTimeDisplay();
+                });
+            });
+
+            // Speed presets
+            timeModal.querySelectorAll('[data-speed]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const speed = parseFloat(btn.dataset.speed);
+                    const index = this.timeSpeedLevels.indexOf(speed);
+                    if (index !== -1) {
+                        this.currentSpeedIndex = index;
+                        this.solarSystem.setTimeSpeed(speed);
+                        this.updateTimeSpeedDisplay();
+                        this.updateMobileTimeDisplay();
+                    }
+                });
+            });
+
+            // Reset button
+            timeModal.querySelector('[data-action="reset"]').addEventListener('click', () => {
+                this.resetTime();
+                this.updateMobileTimeDisplay();
+            });
+        }
+
+        // Update display before showing
+        this.updateMobileTimeDisplay();
+        timeModal.style.display = 'flex';
+    }
+
+    updateMobileTimeDisplay() {
+        const mobileDate = document.getElementById('mobile-simulation-date');
+        const mobileSpeed = document.getElementById('mobile-time-speed');
+        if (mobileDate) mobileDate.textContent = this.simulationDate.textContent;
+        if (mobileSpeed) mobileSpeed.textContent = this.timeSpeedDisplay.textContent;
+    }
+
+    showMobileMoreMenu() {
+        // Create more menu modal if not exists
+        let moreModal = document.getElementById('mobile-more-modal');
+
+        if (!moreModal) {
+            moreModal = document.createElement('div');
+            moreModal.id = 'mobile-more-modal';
+            moreModal.className = 'modal';
+            moreModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2><i class="fas fa-ellipsis-h"></i> More Options</h2>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="more-menu-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                            <button class="more-menu-btn" data-action="screenshot">
+                                <i class="fas fa-camera"></i>
+                                <span>Screenshot</span>
+                            </button>
+                            <button class="more-menu-btn" data-action="fullscreen">
+                                <i class="fas fa-expand"></i>
+                                <span>Fullscreen</span>
+                            </button>
+                            <button class="more-menu-btn" data-action="tour">
+                                <i class="fas fa-rocket"></i>
+                                <span>Tour</span>
+                            </button>
+                            <button class="more-menu-btn" data-action="settings">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </button>
+                            <button class="more-menu-btn" data-action="help">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Help</span>
+                            </button>
+                            <button class="more-menu-btn" data-action="reset-camera">
+                                <i class="fas fa-sync"></i>
+                                <span>Reset View</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(moreModal);
+
+            // Add styles for more menu buttons
+            const style = document.createElement('style');
+            style.textContent = `
+                .more-menu-btn {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 20px 16px;
+                    border: 1px solid var(--border-color);
+                    border-radius: 16px;
+                    background: rgba(255, 255, 255, 0.03);
+                    color: var(--text-primary);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+                .more-menu-btn i {
+                    font-size: 1.5rem;
+                    color: var(--accent-primary);
+                }
+                .more-menu-btn span {
+                    font-size: 0.85rem;
+                    font-weight: 500;
+                }
+                .more-menu-btn:active {
+                    background: var(--accent-primary);
+                    transform: scale(0.95);
+                }
+                .mobile-time-display {
+                    text-align: center;
+                    padding: 20px;
+                    background: rgba(255, 255, 255, 0.03);
+                    border-radius: 16px;
+                    margin-bottom: 20px;
+                }
+                .mobile-time-display .current-date {
+                    display: block;
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                }
+                .mobile-time-display .time-speed {
+                    display: block;
+                    font-size: 1rem;
+                    color: var(--accent-primary);
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Bind more modal events
+            moreModal.querySelector('.modal-close').addEventListener('click', () => {
+                moreModal.style.display = 'none';
+            });
+            moreModal.addEventListener('click', (e) => {
+                if (e.target === moreModal) moreModal.style.display = 'none';
+            });
+
+            // More menu actions
+            moreModal.querySelectorAll('.more-menu-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.dataset.action;
+                    moreModal.style.display = 'none';
+
+                    switch (action) {
+                        case 'screenshot': this.takeScreenshot(); break;
+                        case 'fullscreen': this.toggleFullscreen(); break;
+                        case 'tour': this.showModal('tour'); break;
+                        case 'settings': this.showModal('settings'); break;
+                        case 'help': this.showModal('help'); break;
+                        case 'reset-camera': this.solarSystem.resetCamera(); break;
+                    }
+                });
+            });
+        }
+
+        moreModal.style.display = 'flex';
     }
 
     setupSolarSystemCallbacks() {
@@ -497,6 +807,7 @@ class UIController {
     togglePanel(event) {
         const panelId = event.currentTarget.dataset.panel;
         const panel = document.getElementById(`${panelId}-panel`);
+        const overlay = document.getElementById('mobile-nav-overlay');
 
         // On mobile, toggle 'open' class instead of 'collapsed'
         if (window.innerWidth <= 768) {
@@ -507,7 +818,21 @@ class UIController {
                 otherPanel.classList.remove('open');
             }
 
-            panel.classList.toggle('open');
+            const isOpen = panel.classList.toggle('open');
+
+            // Toggle overlay
+            if (overlay) {
+                overlay.classList.toggle('active', isOpen);
+            }
+
+            // Update mobile nav buttons
+            const mobileNavBtns = document.querySelectorAll('.mobile-nav-btn');
+            mobileNavBtns.forEach(btn => btn.classList.remove('active'));
+            if (isOpen) {
+                const action = panelId === 'left' ? 'controls' : 'info';
+                const activeBtn = document.querySelector(`.mobile-nav-btn[data-action="${action}"]`);
+                if (activeBtn) activeBtn.classList.add('active');
+            }
         } else {
             panel.classList.toggle('collapsed');
         }

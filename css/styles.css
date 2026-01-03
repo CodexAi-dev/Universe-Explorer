@@ -2999,11 +2999,115 @@ input:focus-visible {
 }
 
 /* ==========================================
-   MOBILE RESPONSIVE - COMPLETE OVERHAUL
+   MOBILE RESPONSIVE - ADVANCED PROFESSIONAL
+   Complete Overhaul for All Devices
    ========================================== */
 
-/* Tablet Landscape */
+/* Mobile Menu Toggle Button - Always visible on mobile */
+.mobile-menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:active {
+    background: var(--accent-primary);
+    transform: scale(0.95);
+}
+
+/* Mobile Navigation Overlay */
+.mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 9998;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-nav-overlay.active {
+    opacity: 1;
+}
+
+/* Mobile Bottom Navigation */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg-panel);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border-glow);
+    z-index: 200;
+    padding: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.mobile-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.mobile-nav-btn i {
+    font-size: 1.2rem;
+}
+
+.mobile-nav-btn span {
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mobile-nav-btn.active,
+.mobile-nav-btn:active {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    transform: scale(0.95);
+}
+
+/* ==========================================
+   Tablet Landscape (1024px)
+   ========================================== */
 @media (max-width: 1024px) {
+
+    /* Loading Screen */
     .countdown-display {
         font-size: 4rem;
     }
@@ -3021,12 +3125,47 @@ input:focus-visible {
         height: 600px;
         bottom: -200px;
     }
+
+    /* Panels slightly narrower */
+    .panel {
+        width: 280px;
+    }
+
+    /* Header adjustments */
+    .header-controls {
+        gap: 8px;
+    }
 }
 
-/* Tablet Portrait */
+/* ==========================================
+   Tablet Portrait (768px)
+   ========================================== */
 @media (max-width: 768px) {
 
-    /* Loading Screen Mobile */
+    /* Show mobile elements */
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
+    .mobile-bottom-nav {
+        display: block;
+    }
+
+    .mobile-nav-overlay {
+        display: block;
+        pointer-events: none;
+    }
+
+    .mobile-nav-overlay.active {
+        pointer-events: auto;
+    }
+
+    /* Hide desktop elements */
+    .header-controls button:not(.mobile-menu-toggle) {
+        display: none;
+    }
+
+    /* ===== LOADING SCREEN ===== */
     .countdown-display {
         font-size: 3.5rem;
     }
@@ -3086,10 +3225,11 @@ input:focus-visible {
         height: 100px;
     }
 
-    /* Header Mobile */
+    /* ===== HEADER ===== */
     #top-bar {
         padding: 0 12px;
-        height: 50px;
+        height: 56px;
+        justify-content: space-between;
     }
 
     .logo {
@@ -3098,141 +3238,39 @@ input:focus-visible {
     }
 
     .logo i {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
     }
 
     .header-controls {
-        gap: 5px;
+        gap: 8px;
     }
 
-    .header-controls button {
-        width: 38px;
-        height: 38px;
-        font-size: 0.9rem;
-    }
-
-    /* Panels Mobile - Slide from bottom */
-    #left-panel,
-    #right-panel {
-        width: 100%;
-        max-width: 100%;
-        height: 55vh;
-        top: auto;
-        bottom: 80px;
-        left: 0;
-        right: 0;
-        border-radius: 20px 20px 0 0;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    }
-
-    #left-panel.open,
-    #right-panel.open {
-        transform: translateY(0);
-    }
-
-    .panel-header {
-        padding: 12px 16px;
-    }
-
-    .panel-header h3 {
-        font-size: 1rem;
-    }
-
-    .panel-content {
-        padding: 12px;
-    }
-
-    .control-section h4 {
-        font-size: 0.85rem;
-    }
-
-    /* Toggle Switches Mobile */
-    .toggle-switch {
-        padding: 8px 0;
-    }
-
-    .label-text {
-        font-size: 0.85rem;
-    }
-
-    /* Planet Selector Mobile */
-    #planet-selector {
-        padding: 8px;
-        gap: 6px;
-        max-width: 100%;
+    /* ===== UNIVERSE SCALE SELECTOR ===== */
+    .universe-scale-selector {
+        top: 62px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        padding: 6px;
+        gap: 4px;
+        max-width: calc(100vw - 24px);
         overflow-x: auto;
+        overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
     }
 
-    #planet-selector::-webkit-scrollbar {
+    .universe-scale-selector::-webkit-scrollbar {
         display: none;
-    }
-
-    .planet-btn {
-        padding: 8px;
-        min-width: 44px;
-        flex-shrink: 0;
-    }
-
-    .planet-btn span {
-        display: none;
-    }
-
-    .planet-icon {
-        width: 28px;
-        height: 28px;
-    }
-
-    /* Time Control Panel Mobile */
-    #time-control-panel {
-        height: 70px;
-        padding: 8px 12px;
-        gap: 12px;
-    }
-
-    .time-display {
-        min-width: auto;
-        flex: 0 0 auto;
-    }
-
-    .current-date {
-        font-size: 0.75rem;
-    }
-
-    .current-speed {
-        font-size: 0.7rem;
-    }
-
-    .time-controls {
-        gap: 6px;
-    }
-
-    .time-btn {
-        width: 38px;
-        height: 38px;
-    }
-
-    .time-btn.play-btn {
-        width: 46px;
-        height: 46px;
-    }
-
-    /* Universe Scale Selector Mobile */
-    .universe-scale-selector {
-        top: 55px;
-        padding: 4px;
-        gap: 2px;
-        max-width: 95vw;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
     .scale-btn {
-        padding: 8px 12px;
+        padding: 10px 14px;
         min-width: auto;
         flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .scale-btn span {
@@ -3243,63 +3281,562 @@ input:focus-visible {
         font-size: 1rem;
     }
 
-    /* Floating Buttons Mobile */
-    .floating-btn {
-        bottom: 90px;
-        right: 10px;
-        padding: 10px 14px;
+    /* Tooltip for scale buttons */
+    .scale-btn::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--bg-panel);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+
+    .scale-btn.active::after {
+        opacity: 1;
+    }
+
+    /* ===== SIDE PANELS - BOTTOM SHEET STYLE ===== */
+    #left-panel,
+    #right-panel {
+        position: fixed;
+        width: 100%;
+        max-width: 100%;
+        height: 60vh;
+        max-height: 60vh;
+        top: auto;
+        bottom: 60px;
+        left: 0;
+        right: 0;
+        border-radius: 24px 24px 0 0;
+        border: none;
+        border-top: 1px solid var(--border-glow);
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 150;
+    }
+
+    #left-panel.open,
+    #right-panel.open {
+        transform: translateY(0);
+    }
+
+    /* Panel drag handle indicator */
+    #left-panel::after,
+    #right-panel::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: var(--text-muted);
+        border-radius: 2px;
+        opacity: 0.5;
+    }
+
+    .panel-header {
+        padding: 20px 16px 12px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .panel-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .panel-toggle {
+        display: none;
+    }
+
+    .panel-content {
+        padding: 16px;
+        height: calc(100% - 60px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== CONTROL SECTIONS ===== */
+    .control-section {
+        margin-bottom: 20px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+    }
+
+    .control-section h4 {
+        font-size: 0.9rem;
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* ===== TOGGLE SWITCHES ===== */
+    .toggle-switch {
+        padding: 12px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .toggle-switch .slider {
+        width: 48px;
+        height: 26px;
+    }
+
+    .toggle-switch .slider::before {
+        width: 20px;
+        height: 20px;
+    }
+
+    .toggle-switch input:checked+.slider::before {
+        transform: translateX(22px);
+    }
+
+    .label-text {
+        font-size: 0.9rem;
+        flex: 1;
+        margin-right: 12px;
+    }
+
+    /* ===== RANGE SLIDERS ===== */
+    .control-group input[type="range"] {
+        height: 8px;
+        -webkit-appearance: none;
+        background: var(--bg-hover);
+        border-radius: 4px;
+    }
+
+    .control-group input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 24px;
+        height: 24px;
+        background: var(--accent-primary);
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    /* ===== SELECT DROPDOWNS ===== */
+    .control-group select {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.9rem;
+        border-radius: 10px;
+    }
+
+    /* ===== INFO PANEL TABS ===== */
+    .info-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 4px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+    }
+
+    .info-tab {
+        flex: 1;
+        padding: 12px 8px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    /* ===== PLANET INFO ===== */
+    .planet-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .planet-icon,
+    #selected-planet-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+
+    .planet-title h2,
+    #planet-name {
+        font-size: 1.4rem;
+    }
+
+    .planet-tag,
+    #planet-type {
+        font-size: 0.75rem;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .info-item {
+        padding: 12px;
+        border-radius: 12px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .info-item i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+
+    .info-label {
+        font-size: 0.7rem;
+    }
+
+    .info-value {
         font-size: 0.85rem;
     }
 
-    /* Modals Mobile */
-    .modal-content {
-        width: 95%;
-        max-width: none;
-        max-height: 80vh;
-        margin: 10vh auto;
+    /* ===== PLANET ACTIONS ===== */
+    .planet-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+    }
+
+    .planet-actions button {
+        padding: 14px 12px;
+        font-size: 0.85rem;
+        border-radius: 12px;
+    }
+
+    .planet-actions button:last-child {
+        grid-column: span 2;
+    }
+
+    /* ===== DEEP SPACE SECTION ===== */
+    .deepspace-category h5 {
+        font-size: 0.85rem;
+        margin-bottom: 10px;
+    }
+
+    .deepspace-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .deepspace-buttons button {
+        padding: 10px 14px;
+        font-size: 0.8rem;
+        border-radius: 10px;
+    }
+
+    /* ===== SPACE FACTS WIDGET ===== */
+    .space-facts-widget {
+        padding: 16px;
         border-radius: 16px;
+        margin-top: 16px;
+    }
+
+    .facts-header {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .facts-content p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .btn-fact {
+        padding: 12px;
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    /* ===== TIME CONTROL PANEL - HIDDEN ON MOBILE ===== */
+    #time-control-panel {
+        display: none;
+    }
+
+    /* ===== MOBILE TIME CONTROLS (in panels) ===== */
+    .mobile-time-controls {
+        display: block;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* ===== PLANET SELECTOR ===== */
+    #planet-selector {
+        position: fixed;
+        bottom: 65px;
+        left: 0;
+        right: 0;
+        transform: none;
+        padding: 10px 12px;
+        gap: 8px;
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+        border-top: 1px solid var(--border-color);
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        justify-content: flex-start;
+        z-index: 100;
+    }
+
+    #planet-selector::-webkit-scrollbar {
+        display: none;
+    }
+
+    .planet-btn {
+        padding: 10px 12px;
+        min-width: 55px;
+        flex-shrink: 0;
+        border-radius: 14px;
+    }
+
+    .planet-btn span {
+        display: block;
+        font-size: 0.65rem;
+        margin-top: 4px;
+    }
+
+    .planet-btn.active {
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .planet-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    /* ===== FLOATING BUTTONS ===== */
+    .floating-btn {
+        bottom: 140px;
+        right: 12px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        border-radius: 30px;
+    }
+
+    #btn-start-tour {
+        bottom: 140px;
+    }
+
+    /* ===== MODALS ===== */
+    .modal {
+        padding: 16px;
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        margin: 0;
+        border-radius: 24px 24px 0 0;
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-content.modal-large {
+        max-height: 95vh;
+    }
+
+    .modal-header {
+        padding: 20px 20px 16px;
+        position: sticky;
+        top: 0;
+        background: var(--bg-panel);
+        z-index: 10;
+    }
+
+    .modal-header::after {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: var(--text-muted);
+        border-radius: 2px;
+        opacity: 0.5;
     }
 
     .modal-header h2 {
         font-size: 1.2rem;
     }
 
-    .modal-body {
-        padding: 16px;
+    .modal-close {
+        width: 36px;
+        height: 36px;
+        font-size: 1.4rem;
     }
 
-    /* Info Grid Mobile */
-    .info-grid {
-        grid-template-columns: 1fr;
+    .modal-body {
+        padding: 16px 20px 30px;
+        max-height: calc(90vh - 80px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* ===== SETTINGS MODAL ===== */
+    .settings-section {
+        margin-bottom: 24px;
+    }
+
+    .settings-section h3 {
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+
+    .theme-options {
+        display: flex;
+        flex-direction: column;
         gap: 10px;
     }
 
-    .info-item {
-        padding: 10px;
+    .theme-btn {
+        padding: 14px;
+        font-size: 0.9rem;
+        justify-content: flex-start;
+        gap: 12px;
     }
 
-    /* Tour Mobile */
-    .tour-tooltip {
-        max-width: 280px;
-        padding: 16px;
+    /* ===== HELP MODAL ===== */
+    .help-section {
+        margin-bottom: 20px;
+    }
+
+    .help-section h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+
+    .help-section ul {
+        padding-left: 0;
+        list-style: none;
+    }
+
+    .help-section li {
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    /* ===== COMPARISON MODAL ===== */
+    .comparison-selectors {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .comparison-select {
+        width: 100%;
+    }
+
+    .comparison-vs {
+        padding: 8px 0;
+    }
+
+    .comparison-visual {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .comparison-planet {
+        width: 120px;
+        height: 120px;
+    }
+
+    .comparison-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .comparison-table table {
+        min-width: 500px;
+        font-size: 0.85rem;
+    }
+
+    /* ===== TOUR MODAL ===== */
+    .tour-content {
+        text-align: center;
+    }
+
+    .tour-planet-image,
+    #tour-planet-image {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 16px;
+    }
+
+    #tour-planet-name {
+        font-size: 1.4rem;
+    }
+
+    #tour-planet-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .tour-progress {
+        margin: 20px 0;
     }
 
     .tour-controls {
+        display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
     }
 
     .tour-controls button {
         width: 100%;
+        padding: 14px;
+    }
+
+    /* ===== HOVER TOOLTIP - Hidden on mobile ===== */
+    #hover-tooltip {
+        display: none !important;
+    }
+
+    /* ===== SPEED SLIDER ===== */
+    .speed-slider {
+        display: none;
     }
 }
 
-/* Mobile Portrait */
+/* ==========================================
+   Mobile Portrait (480px)
+   ========================================== */
 @media (max-width: 480px) {
 
-    /* Loading Screen Small Mobile */
+    /* ===== LOADING SCREEN ===== */
     .countdown-display {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
     }
 
     .countdown-prefix {
@@ -3308,16 +3845,17 @@ input:focus-visible {
 
     .countdown-number.liftoff {
         font-size: 1.5rem;
+        padding: 10px 20px;
     }
 
     .countdown-container {
         bottom: 8%;
         width: 100%;
-        padding: 0 15px;
+        padding: 0 20px;
     }
 
     .mission-badge {
-        padding: 6px 12px;
+        padding: 8px 14px;
     }
 
     .mission-badge i {
@@ -3325,15 +3863,15 @@ input:focus-visible {
     }
 
     .mission-badge span {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
     }
 
     .mission-progress {
-        width: 200px;
+        width: 220px;
     }
 
     .countdown-status {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         letter-spacing: 1px;
     }
 
@@ -3363,126 +3901,192 @@ input:focus-visible {
         height: 200px;
     }
 
-    /* Header Small Mobile */
+    /* ===== HEADER ===== */
     #top-bar {
-        padding: 0 8px;
-        height: 46px;
+        padding: 0 10px;
+        height: 52px;
+    }
+
+    .logo {
+        gap: 6px;
     }
 
     .logo span {
-        display: none;
+        font-size: 0.9rem;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .logo i {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
-    .header-controls button {
-        width: 34px;
-        height: 34px;
-        font-size: 0.85rem;
-    }
-
-    /* Panels Small Mobile */
-    #left-panel,
-    #right-panel {
-        height: 60vh;
-        bottom: 70px;
-    }
-
-    .panel-header {
-        padding: 10px 12px;
-    }
-
-    /* Planet Selector Small Mobile */
-    #planet-selector {
-        bottom: 75px;
-        padding: 6px;
-        gap: 4px;
-    }
-
-    .planet-btn {
-        padding: 6px;
-        min-width: 40px;
-    }
-
-    .planet-icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    /* Time Panel Small Mobile */
-    #time-control-panel {
-        height: 65px;
-        padding: 6px 8px;
-        gap: 8px;
-    }
-
-    .time-display {
-        display: none;
-    }
-
-    .time-btn {
-        width: 34px;
-        height: 34px;
-    }
-
-    .time-btn.play-btn {
-        width: 42px;
-        height: 42px;
-    }
-
-    /* Universe Scale Small Mobile */
+    /* ===== UNIVERSE SCALE SELECTOR ===== */
     .universe-scale-selector {
-        top: 50px;
-        padding: 3px;
+        top: 58px;
+        padding: 5px;
+        gap: 3px;
     }
 
     .scale-btn {
-        padding: 6px 10px;
+        padding: 8px 12px;
     }
 
     .scale-btn i {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
-    /* Floating Button Small Mobile */
-    .floating-btn {
-        bottom: 80px;
-        right: 8px;
-        padding: 8px 12px;
+    /* ===== PANELS ===== */
+    #left-panel,
+    #right-panel {
+        height: 65vh;
+        max-height: 65vh;
+        bottom: 60px;
+    }
+
+    .panel-header {
+        padding: 18px 14px 10px;
+    }
+
+    .panel-header h3 {
+        font-size: 1rem;
+    }
+
+    .panel-content {
+        padding: 12px;
+    }
+
+    /* ===== CONTROL SECTIONS ===== */
+    .control-section {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+
+    .control-section h4 {
+        font-size: 0.85rem;
+    }
+
+    /* ===== INFO GRID ===== */
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .info-item {
+        padding: 10px;
+    }
+
+    .info-item i {
+        font-size: 1rem;
+    }
+
+    .info-label {
+        font-size: 0.65rem;
+    }
+
+    .info-value {
         font-size: 0.8rem;
     }
 
-    /* Modals Small Mobile */
+    /* ===== PLANET SELECTOR ===== */
+    #planet-selector {
+        padding: 8px 10px;
+        gap: 6px;
+    }
+
+    .planet-btn {
+        padding: 8px 10px;
+        min-width: 50px;
+        border-radius: 12px;
+    }
+
+    .planet-btn span {
+        font-size: 0.6rem;
+    }
+
+    .planet-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* ===== MOBILE BOTTOM NAV ===== */
+    .mobile-bottom-nav {
+        height: 56px;
+    }
+
+    .mobile-nav-btn {
+        padding: 6px 12px;
+        min-width: 50px;
+    }
+
+    .mobile-nav-btn i {
+        font-size: 1.1rem;
+    }
+
+    .mobile-nav-btn span {
+        font-size: 0.6rem;
+    }
+
+    /* ===== FLOATING BUTTONS ===== */
+    .floating-btn {
+        bottom: 130px;
+        right: 10px;
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+
+    #btn-start-tour span {
+        display: none;
+    }
+
+    /* ===== MODALS ===== */
     .modal-content {
-        width: 98%;
-        max-height: 85vh;
-        margin: 7vh auto;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
     }
 
     .modal-header {
-        padding: 12px 16px;
+        padding: 18px 16px 14px;
     }
 
     .modal-header h2 {
         font-size: 1.1rem;
     }
 
-    /* Surface View Button Mobile */
+    .modal-body {
+        padding: 14px 16px 24px;
+    }
+
+    /* ===== SURFACE VIEW BUTTON ===== */
     .surface-view-btn {
-        padding: 6px 10px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+    }
+
+    /* ===== DEEP SPACE ===== */
+    .deepspace-buttons button {
+        padding: 8px 12px;
         font-size: 0.75rem;
     }
 }
 
-/* Extra Small Mobile */
+/* ==========================================
+   Extra Small Mobile (360px)
+   ========================================== */
 @media (max-width: 360px) {
+
+    /* ===== LOADING SCREEN ===== */
     .countdown-display {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     .countdown-prefix {
+        font-size: 1.2rem;
+    }
+
+    .countdown-number.liftoff {
         font-size: 1.2rem;
     }
 
@@ -3491,7 +4095,7 @@ input:focus-visible {
     }
 
     .mission-progress {
-        width: 160px;
+        width: 180px;
     }
 
     .shuttle-container {
@@ -3504,23 +4108,76 @@ input:focus-visible {
         bottom: -130px;
     }
 
-    #time-control-panel {
-        gap: 5px;
+    /* ===== HEADER ===== */
+    #top-bar {
+        height: 48px;
+        padding: 0 8px;
     }
 
-    .time-btn {
-        width: 30px;
-        height: 30px;
+    .logo span {
+        display: none;
     }
 
-    .time-btn.play-btn {
-        width: 38px;
-        height: 38px;
+    .logo i {
+        font-size: 1.4rem;
+    }
+
+    /* ===== SCALE SELECTOR ===== */
+    .universe-scale-selector {
+        top: 54px;
+    }
+
+    .scale-btn {
+        padding: 7px 10px;
+    }
+
+    /* ===== PANELS ===== */
+    #left-panel,
+    #right-panel {
+        height: 70vh;
+    }
+
+    .control-section {
+        padding: 12px;
+    }
+
+    /* ===== INFO GRID - Single column on tiny screens ===== */
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* ===== PLANET SELECTOR ===== */
+    .planet-btn {
+        padding: 6px 8px;
+        min-width: 44px;
+    }
+
+    .planet-btn span {
+        display: none;
+    }
+
+    .planet-icon {
+        width: 26px;
+        height: 26px;
+    }
+
+    /* ===== MOBILE NAV ===== */
+    .mobile-nav-btn {
+        min-width: 44px;
+        padding: 6px 10px;
+    }
+
+    .mobile-nav-btn span {
+        display: none;
     }
 }
 
-/* Landscape Mobile */
+/* ==========================================
+   Landscape Mobile
+   ========================================== */
 @media (max-height: 500px) and (orientation: landscape) {
+
+    /* ===== LOADING SCREEN ===== */
     .countdown-container {
         bottom: 5%;
     }
@@ -3530,11 +4187,11 @@ input:focus-visible {
     }
 
     .mission-badge {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .countdown-status {
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .earth {
@@ -3542,76 +4199,202 @@ input:focus-visible {
     }
 
     .shuttle-container {
-        bottom: 100px;
-        transform: translateX(-50%) scale(0.6);
+        bottom: 80px;
+        transform: translateX(-50%) scale(0.5);
     }
 
+    /* ===== PANELS - Side sheets in landscape ===== */
     #left-panel,
     #right-panel {
-        height: 70vh;
+        height: 100%;
+        width: 300px;
+        max-width: 40vw;
+        bottom: 0;
+        border-radius: 0;
+    }
+
+    #left-panel {
+        left: 0;
+        right: auto;
+        transform: translateX(-100%);
+    }
+
+    #left-panel.open {
+        transform: translateX(0);
+    }
+
+    #right-panel {
+        right: 0;
+        left: auto;
+        transform: translateX(100%);
+    }
+
+    #right-panel.open {
+        transform: translateX(0);
+    }
+
+    /* ===== PLANET SELECTOR ===== */
+    #planet-selector {
+        bottom: 0;
+        padding: 6px 8px;
+    }
+
+    .planet-btn span {
+        display: none;
+    }
+
+    /* ===== MOBILE NAV ===== */
+    .mobile-bottom-nav {
+        height: 50px;
+    }
+
+    .mobile-nav-btn span {
+        display: none;
     }
 }
 
-/* Touch Device Optimizations */
+/* ==========================================
+   Touch Device Optimizations
+   ========================================== */
 @media (hover: none) and (pointer: coarse) {
 
-    /* Larger touch targets */
+    /* Larger touch targets - 44px minimum */
     .planet-btn,
     .scale-btn,
     .time-btn,
-    .header-controls button {
+    .header-controls button,
+    .mobile-nav-btn,
+    .mobile-menu-toggle,
+    .toggle-switch .slider,
+    .modal-close,
+    .btn-primary,
+    .btn-secondary,
+    .theme-btn,
+    .info-tab {
         min-height: 44px;
         min-width: 44px;
     }
 
-    /* Remove hover effects that don't work on touch */
+    /* Remove hover effects */
     .planet-btn:hover,
     .scale-btn:hover,
-    .time-btn:hover {
+    .time-btn:hover,
+    .mobile-nav-btn:hover,
+    .btn-primary:hover,
+    .btn-secondary:hover {
         transform: none;
     }
 
-    /* Active states for touch */
+    /* Active states for touch feedback */
     .planet-btn:active,
     .scale-btn:active,
-    .time-btn:active {
+    .time-btn:active,
+    .mobile-nav-btn:active,
+    .btn-primary:active,
+    .btn-secondary:active,
+    .theme-btn:active,
+    .info-tab:active {
         transform: scale(0.95);
-        opacity: 0.8;
-    }
-
-    /* Disable hover tooltips */
-    [title] {
-        pointer-events: auto;
+        opacity: 0.85;
     }
 
     /* Better scrolling */
-    .panel-content {
+    .panel-content,
+    .modal-body,
+    #planet-selector,
+    .universe-scale-selector,
+    .comparison-table {
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
     }
 
-    /* Prevent text selection on touch */
+    /* Prevent text selection */
     .planet-btn,
     .scale-btn,
-    .time-btn {
+    .time-btn,
+    .mobile-nav-btn,
+    button {
         -webkit-user-select: none;
         user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Disable context menu on long press */
+    canvas {
+        -webkit-touch-callout: none;
     }
 }
 
-/* PWA Safe Areas (notch handling) */
+/* ==========================================
+   High Resolution / Retina Displays
+   ========================================== */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
+    .planet-icon,
+    .panel::before,
+    .modal-content {
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* ==========================================
+   PWA Safe Areas (notch handling)
+   ========================================== */
 @supports (padding: max(0px)) {
     #top-bar {
         padding-left: max(12px, env(safe-area-inset-left));
         padding-right: max(12px, env(safe-area-inset-right));
         padding-top: env(safe-area-inset-top);
+        height: calc(56px + env(safe-area-inset-top));
     }
 
-    #time-control-panel {
+    .mobile-bottom-nav {
         padding-bottom: max(8px, env(safe-area-inset-bottom));
+        height: calc(60px + env(safe-area-inset-bottom));
     }
 
     #planet-selector {
-        padding-left: max(8px, env(safe-area-inset-left));
-        padding-right: max(8px, env(safe-area-inset-right));
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    #left-panel,
+    #right-panel {
+        bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+
+    .modal-body {
+        padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+}
+
+/* ==========================================
+   Reduced Motion Preference
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .panel,
+    .modal-content,
+    #left-panel,
+    #right-panel {
+        transition: none;
+    }
+}
+
+/* ==========================================
+   Dark Mode System Preference
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
     }
 }
