@@ -336,30 +336,45 @@ class UIController {
 
         if (!mobileNavBtns.length) return;
 
+        // Track currently open panel
+        this.currentMobilePanel = null;
+
         // Mobile nav button actions
         mobileNavBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const action = btn.dataset.action;
+                const isCurrentlyActive = btn.classList.contains('active');
 
-                // Remove active from all buttons
+                // Remove active from all buttons first
                 mobileNavBtns.forEach(b => b.classList.remove('active'));
+
+                // If clicking the same active button, just close everything
+                if (isCurrentlyActive && (action === 'controls' || action === 'info')) {
+                    this.closeAllMobilePanels();
+                    this.currentMobilePanel = null;
+                    return;
+                }
 
                 switch (action) {
                     case 'controls':
-                        this.toggleMobilePanel('left');
+                        this.closeAllMobilePanels();
+                        this.openMobilePanel('left');
                         btn.classList.add('active');
+                        this.currentMobilePanel = 'left';
                         break;
                     case 'info':
-                        this.toggleMobilePanel('right');
+                        this.closeAllMobilePanels();
+                        this.openMobilePanel('right');
                         btn.classList.add('active');
+                        this.currentMobilePanel = 'right';
                         break;
                     case 'time':
+                        this.closeAllMobilePanels();
                         this.showMobileTimeControls();
-                        btn.classList.add('active');
                         break;
                     case 'more':
+                        this.closeAllMobilePanels();
                         this.showMobileMoreMenu();
-                        btn.classList.add('active');
                         break;
                 }
             });
@@ -370,7 +385,20 @@ class UIController {
             mobileOverlay.addEventListener('click', () => {
                 this.closeAllMobilePanels();
                 mobileNavBtns.forEach(b => b.classList.remove('active'));
+                this.currentMobilePanel = null;
             });
+        }
+    }
+
+    openMobilePanel(panelId) {
+        const panel = document.getElementById(`${panelId}-panel`);
+        const overlay = document.getElementById('mobile-nav-overlay');
+
+        if (!panel) return;
+
+        panel.classList.add('open');
+        if (overlay) {
+            overlay.classList.add('active');
         }
     }
 
@@ -394,6 +422,8 @@ class UIController {
         if (overlay) {
             overlay.classList.toggle('active', isOpen);
         }
+
+        return isOpen;
     }
 
     closeAllMobilePanels() {

@@ -3031,16 +3031,19 @@ input:focus-visible {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    z-index: 9998;
+    bottom: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 140;
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.3s ease;
+    cursor: pointer;
 }
 
 .mobile-nav-overlay.active {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Mobile Bottom Navigation */
@@ -3153,11 +3156,6 @@ input:focus-visible {
 
     .mobile-nav-overlay {
         display: block;
-        pointer-events: none;
-    }
-
-    .mobile-nav-overlay.active {
-        pointer-events: auto;
     }
 
     /* Hide desktop elements */
