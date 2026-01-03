@@ -315,14 +315,6 @@ class UIController {
         this.comparePlanet1.addEventListener('change', () => this.updateComparison());
         this.comparePlanet2.addEventListener('change', () => this.updateComparison());
 
-        // Tour button
-        document.getElementById('btn-start-tour').addEventListener('click', () => {
-            this.showModal('tour');
-            if (window.tourController) {
-                window.tourController.reset();
-            }
-        });
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => this.handleKeyboard(e));
 
@@ -566,10 +558,6 @@ class UIController {
                                 <i class="fas fa-expand"></i>
                                 <span>Fullscreen</span>
                             </button>
-                            <button class="more-menu-btn" data-action="tour">
-                                <i class="fas fa-rocket"></i>
-                                <span>Tour</span>
-                            </button>
                             <button class="more-menu-btn" data-action="settings">
                                 <i class="fas fa-cog"></i>
                                 <span>Settings</span>
@@ -655,7 +643,6 @@ class UIController {
                     switch (action) {
                         case 'screenshot': this.takeScreenshot(); break;
                         case 'fullscreen': this.toggleFullscreen(); break;
-                        case 'tour': this.showModal('tour'); break;
                         case 'settings': this.showModal('settings'); break;
                         case 'help': this.showModal('help'); break;
                         case 'reset-camera': this.solarSystem.resetCamera(); break;
