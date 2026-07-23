@@ -1,0 +1,127 @@
+@import 'tailwindcss';
+
+/**
+ * Design tokens carried over from the v1 stylesheet so the rebuild keeps the
+ * same cosmic palette. Themes and accessibility modes override these on
+ * `:root`, exactly as v1 did via `data-` attributes.
+ */
+@theme {
+  --color-bg-primary: #050510;
+  --color-bg-secondary: #0a0a1f;
+  --color-bg-panel: rgb(8 8 25 / 0.92);
+  --color-bg-hover: rgb(255 255 255 / 0.08);
+  --color-bg-glass: rgb(15 15 40 / 0.85);
+
+  --color-text-primary: #f0f0ff;
+  --color-text-secondary: #9898c8;
+  --color-text-muted: #505080;
+
+  --color-accent: #4a9eff;
+  --color-accent-secondary: #8b5cf6;
+  --color-accent-tertiary: #06b6d4;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-glow: #00d4ff;
+
+  --color-border-subtle: rgb(100 140 255 / 0.15);
+  --color-border-glow: rgb(74 158 255 / 0.4);
+
+  --radius-panel: 16px;
+  --radius-control: 10px;
+
+  --spacing-panel: 340px;
+  --spacing-header: 64px;
+}
+
+:root {
+  --panel-bg: rgb(8 8 25 / 0.92);
+  --panel-text: #f0f0ff;
+  --panel-text-dim: #9898c8;
+  --panel-border: rgb(100 140 255 / 0.15);
+  --panel-accent: #4a9eff;
+  --font-scale: 1;
+  color-scheme: dark;
+}
+
+:root[data-theme='dark'] {
+  --panel-bg: rgb(20 20 20 / 0.95);
+  --panel-text-dim: #b0b0b0;
+}
+
+:root[data-theme='educational'] {
+  --panel-bg: rgb(10 25 41 / 0.95);
+  --panel-accent: #00bcd4;
+}
+
+/* Larger/smaller UI text without touching every utility class. */
+:root[data-text-size='small'] { --font-scale: 0.9; }
+:root[data-text-size='large'] { --font-scale: 1.15; }
+
+/* Strips translucency and boosts contrast for low-vision use. */
+:root[data-high-contrast='true'] {
+  --panel-bg: #000000;
+  --panel-text: #ffffff;
+  --panel-text-dim: #e0e0e0;
+  --panel-border: #ffffff;
+  --panel-accent: #ffff00;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: calc(1rem * var(--font-scale));
+  color: var(--panel-text);
+  /* Pinch-zoom is handled by OrbitControls, not the page. */
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@utility panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(16px);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 8px 40px rgb(0 0 0 / 0.5);
+}
+
+/* Slim scrollbars that don't fight the dark panels. */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--panel-border) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--panel-border);
+    border-radius: 4px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  /* Respect users who ask for less animation. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
