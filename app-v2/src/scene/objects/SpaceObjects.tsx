@@ -6,6 +6,7 @@ import { createSatelliteModel } from '@/three/builders/satellites'
 import { createAlienShipModel } from '@/three/builders/alienShips'
 import { createCometModel, createMeteor } from '@/three/builders/comets'
 import { planetPositions } from '@/three/simulation'
+import { pointSprite } from '@/three/pointSprite'
 import { useUniverseStore } from '@/store/useUniverseStore'
 
 const EARTH = 'earth'
@@ -312,7 +313,16 @@ export function SpaceDebris() {
 
   return (
     <points ref={ref} geometry={geometry}>
-      <pointsMaterial size={0.2} vertexColors transparent opacity={0.6} sizeAttenuation />
+      <pointsMaterial
+        size={0.35}
+        map={pointSprite()}
+        alphaMap={pointSprite()}
+        vertexColors
+        transparent
+        opacity={0.45}
+        depthWrite={false}
+        sizeAttenuation
+      />
     </points>
   )
 }

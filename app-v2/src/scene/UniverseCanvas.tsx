@@ -3,9 +3,12 @@ import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import { PLANET_DATA } from '@/data/planets'
+import { AU_UNITS } from '@/three/scale'
 import { useUniverseStore } from '@/store/useUniverseStore'
 import { CameraRig } from './CameraRig'
+import { DebugBridge } from './DebugBridge'
 import { SimulationDriver } from './SimulationDriver'
+import { Skybox } from './Skybox'
 import { StarField } from './StarField'
 import { Sun } from './Sun'
 import { Planet } from './Planet'
@@ -34,24 +37,41 @@ const PLANET_IDS = [
   'pluto',
 ]
 
+/**
+ * Lighting is deliberately spare: in space there is one source and no fill.
+ * The faint ambient term stands in for starlight and zodiacal light, so night
+ * sides read as dark rather than pure black.
+ *
+ * Falloff is a real trade-off. True inverse-square is correct — Neptune
+ * receives about 1/900th of Earth's sunlight — but it leaves the outer
+ * planets too dark to study. The gentler default keeps them legible while
+ * still dimming outward; the exact figure is reported in the info panel
+ * either way, so the physics is taught even when the render is compromised.
+ */
 function Lights() {
   const quality = useUniverseStore((s) => s.quality)
+  const realisticLight = useUniverseStore((s) => s.realisticLight)
   const castShadow = quality === 'high' || quality === 'ultra'
+
+  // Normalised so Earth's orbit receives roughly unit illumination either way.
+  const decay = realisticLight ? 2 : 0.4
+  const intensity = realisticLight ? 3.2 * AU_UNITS ** 2 : 3.4 * AU_UNITS ** 0.4
 
   return (
     <>
-      <ambientLight color={0x404050} intensity={0.4} />
+      <ambientLight color={0x2a2a3a} intensity={realisticLight ? 0.04 : 0.1} />
       <pointLight
-        color={0xffffff}
-        intensity={2.5}
-        distance={2000}
+        color={0xfff5e8}
+        intensity={intensity}
+        decay={decay}
+        distance={0}
         position={[0, 0, 0]}
         castShadow={castShadow}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        shadow-camera-near={1}
+        shadow-camera-far={4000}
       />
-      <hemisphereLight color={0xffffcc} groundColor={0x080820} intensity={0.6} />
-      <directionalLight color={0x4466ff} intensity={0.15} position={[100, 100, 100]} />
     </>
   )
 }
@@ -64,7 +84,9 @@ function Scene() {
       <Lights />
       <CameraRig />
       <SimulationDriver />
+      <DebugBridge />
 
+      <Skybox />
       <StarField />
       <Sun />
       {PLANET_IDS.map((id) => (

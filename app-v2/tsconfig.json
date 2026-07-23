@@ -24,5 +24,7 @@
 
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"],
+  // Tests run through Node's own type-stripping runner, not the bundler.
+  "exclude": ["src/**/*.test.ts"]
 }

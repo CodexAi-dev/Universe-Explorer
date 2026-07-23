@@ -6,12 +6,15 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { PLANET_DATA } from '@/data/planets'
 import { EXOTIC_OBJECTS, GALAXIES, NEBULAE } from '@/data/universe'
 import { planetPositions } from '@/three/simulation'
+import { bodyRadius } from '@/three/scale'
 import { VIEW_PRESETS, universeState, useUniverseStore } from '@/store/useUniverseStore'
 import type { CameraCommand } from '@/store/useUniverseStore'
 
 const HOME = new THREE.Vector3(100, 80, 200)
 const ORIGIN = new THREE.Vector3(0, 0, 0)
 const FLIGHT_MS = 1500
+/** Small enough to let the camera approach a true-scale planet. */
+const MIN_DISTANCE = 0.02
 
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
@@ -77,13 +80,22 @@ export function CameraRig() {
       }
 
       case 'focusPlanet': {
-        const data = PLANET_DATA[c.name]
-        if (!data) break
+        if (!PLANET_DATA[c.name]) break
         focused.current = c.name === 'sun' ? null : c.name
 
-        const target = c.name === 'sun' ? ORIGIN.clone() : (planetPositions.get(c.name)?.clone() ?? ORIGIN.clone())
-        const distance = data.size * 5 + 10
-        flyTo(target.clone().add(new THREE.Vector3(distance, distance * 0.5, distance)), target)
+        const target =
+          c.name === 'sun'
+            ? ORIGIN.clone()
+            : (planetPositions.get(c.name)?.clone() ?? ORIGIN.clone())
+
+        // Frame the body by its *drawn* radius, so the shot stays correct
+        // whichever size mode is active.
+        const radius = bodyRadius(c.name, universeState().sizeMode)
+        const distance = radius * 4.5 + radius * 0.5
+        flyTo(
+          target.clone().add(new THREE.Vector3(distance, distance * 0.45, distance)),
+          target,
+        )
         break
       }
 
@@ -111,16 +123,17 @@ export function CameraRig() {
     if (!controls.current) return
 
     if (!surfaceViewPlanet) {
-      controls.current.minDistance = 10
+      controls.current.minDistance = MIN_DISTANCE
       controls.current.maxDistance = 50000
       return
     }
 
-    const data = PLANET_DATA[surfaceViewPlanet]
-    if (!data) return
+    if (!PLANET_DATA[surfaceViewPlanet]) return
+    const radius = bodyRadius(surfaceViewPlanet, universeState().sizeMode)
 
-    controls.current.minDistance = data.size * 1.05
-    controls.current.maxDistance = data.size * 10
+    // Hold the camera just off the surface and stop it drifting away.
+    controls.current.minDistance = radius * 1.05
+    controls.current.maxDistance = radius * 10
 
     const target =
       surfaceViewPlanet === 'sun'
@@ -128,7 +141,7 @@ export function CameraRig() {
         : (planetPositions.get(surfaceViewPlanet)?.clone() ?? ORIGIN.clone())
 
     // Approach from a random bearing so repeat visits differ, as in v1.
-    const distance = data.size * 1.2
+    const distance = radius * 1.35
     const angle = Math.random() * Math.PI * 2
     flyTo(
       target
@@ -160,10 +173,10 @@ export function CameraRig() {
     // Zooming far enough out leaves Surface View.
     const { surfaceViewPlanet: active } = universeState()
     if (active && !flight.current) {
-      const data = PLANET_DATA[active]
       const centre =
         active === 'sun' ? ORIGIN : (planetPositions.get(active) ?? ORIGIN)
-      if (data && camera.position.distanceTo(centre) > data.size * 8) exitSurfaceView()
+      const radius = bodyRadius(active, universeState().sizeMode)
+      if (camera.position.distanceTo(centre) > radius * 8) exitSurfaceView()
     }
 
     ctrl.update()
@@ -176,7 +189,7 @@ export function CameraRig() {
       enableDamping
       dampingFactor={0.05}
       screenSpacePanning
-      minDistance={10}
+      minDistance={MIN_DISTANCE}
       maxDistance={50000}
       maxPolarAngle={Math.PI}
       autoRotate={autoOrbit}

@@ -1,4 +1,4 @@
-import { ChevronLeft, Eye, Orbit, Rocket, Sliders, Sparkles, Video } from 'lucide-react'
+import { ChevronLeft, Eye, Orbit, Rocket, Ruler, Sliders, Sparkles, Video } from 'lucide-react'
 import { useUniverseStore } from '@/store/useUniverseStore'
 import type { BooleanKey, Quality } from '@/store/useUniverseStore'
 import { Button, Section, Select, Toggle } from './primitives'
@@ -7,7 +7,9 @@ const VIEW_OPTIONS: Array<{ key: BooleanKey; label: string }> = [
   { key: 'showOrbits', label: 'Orbit Paths' },
   { key: 'showLabels', label: 'Planet Labels' },
   { key: 'showMoons', label: 'Moons' },
-  { key: 'showStars', label: 'Star Field' },
+  { key: 'showStars', label: 'Milky Way' },
+  { key: 'showClouds', label: 'Cloud Layers' },
+  { key: 'showAtmospheres', label: 'Atmospheres' },
   { key: 'showAsteroidBelt', label: 'Asteroid Belt' },
   { key: 'showPluto', label: 'Pluto' },
 ]
@@ -96,6 +98,36 @@ export function ControlPanel({ collapsed, onToggleCollapsed }: ControlPanelProps
           ))}
         </Section>
 
+        <Section title="Scale" icon={<Ruler className="h-3.5 w-3.5" />}>
+          <Select
+            label="Distances"
+            value={state.distanceMode}
+            onChange={(v) => state.set('distanceMode', v)}
+            options={[
+              { value: 'compressed', label: 'Compressed' },
+              { value: 'true', label: 'True to scale' },
+            ]}
+          />
+          <Select
+            label="Body sizes"
+            value={state.sizeMode}
+            onChange={(v) => state.set('sizeMode', v)}
+            options={[
+              { value: 'enhanced', label: 'Enhanced' },
+              { value: 'true', label: 'True to scale' },
+            ]}
+          />
+          <p className="pt-1 text-xs text-[var(--panel-text-dim)]">
+            {state.distanceMode === 'true' && state.sizeMode === 'true'
+              ? 'This is the real Solar System: almost entirely empty space. Earth is now about 1/12,000 the width of its own orbit.'
+              : state.distanceMode === 'true'
+                ? 'Real orbital spacing. Neptune sits 30× further out than Earth.'
+                : state.sizeMode === 'true'
+                  ? 'Real relative sizes. The Sun is 109 Earths across.'
+                  : 'Sizes follow √radius and distances are compressed, so everything stays visible at once. Positions and orbit shapes are still real.'}
+          </p>
+        </Section>
+
         <Section title="Camera" icon={<Video className="h-3.5 w-3.5" />}>
           <div className="grid grid-cols-3 gap-2 pt-1">
             <Button onClick={() => state.setCameraViewMode('3d')}>3D</Button>
@@ -108,6 +140,19 @@ export function ControlPanel({ collapsed, onToggleCollapsed }: ControlPanelProps
               <Orbit className="h-4 w-4" /> Auto
             </Button>
           </div>
+        </Section>
+
+        <Section title="Lighting">
+          <Toggle
+            label="True 1/r² sunlight"
+            checked={state.realisticLight}
+            onChange={() => state.toggle('realisticLight')}
+          />
+          <p className="pt-1 text-xs text-[var(--panel-text-dim)]">
+            {state.realisticLight
+              ? 'Physically correct falloff. The outer planets go very dark — Neptune really does receive about 1/900th of Earth’s sunlight.'
+              : 'Softened falloff so the outer planets stay visible. Each planet’s true share of sunlight is still listed in its info panel.'}
+          </p>
         </Section>
 
         <Section title="Quality">

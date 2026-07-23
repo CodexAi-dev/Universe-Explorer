@@ -94,6 +94,46 @@ export function HelpModal({ open, onClose }: { open: boolean; onClose: () => voi
         </div>
 
         <div>
+          <h3 className="mb-1.5 font-semibold">Where the data comes from</h3>
+          <ul className="space-y-1 text-[var(--panel-text-dim)]">
+            <li>
+              <strong className="text-[var(--panel-text)]">Positions</strong> are computed
+              from JPL Keplerian elements, accurate 1800–2050. Set any date and the
+              alignment shown is the real one — the 2020 Great Conjunction lands within
+              0.05° of where Jupiter and Saturn actually appeared.
+            </li>
+            <li>
+              <strong className="text-[var(--panel-text)]">Rotation</strong> uses measured
+              sidereal periods, so Venus and Uranus really do turn backwards and Jupiter
+              really does complete a day in under 10 hours.
+            </li>
+            <li>
+              <strong className="text-[var(--panel-text)]">Seasons</strong> come from IAU
+              axis orientations. The sub-solar latitude hits ±23.44° at Earth's solstices,
+              which is what defines the tropics.
+            </li>
+            <li>
+              <strong className="text-[var(--panel-text)]">Surfaces</strong> are NASA
+              imagery via Solar System Scope (CC BY 4.0). Pluto is procedural.
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="mb-1.5 font-semibold">What is not to scale</h3>
+          <ul className="space-y-1 text-[var(--panel-text-dim)]">
+            <li>
+              Distances and body sizes are compressed by default so everything fits on
+              one screen. Both can be switched to true scale under Controls → Scale.
+            </li>
+            <li>
+              Deep-space objects are placed for legibility, not at their real distances.
+            </li>
+            <li>Alien ships are fictional.</li>
+          </ul>
+        </div>
+
+        <div>
           <h3 className="mb-1.5 font-semibold">Keyboard shortcuts</h3>
           <dl className="space-y-1">
             {SHORTCUTS.map(([key, description]) => (

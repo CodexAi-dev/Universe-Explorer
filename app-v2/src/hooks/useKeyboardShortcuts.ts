@@ -45,10 +45,10 @@ export function useKeyboardShortcuts({ onToggleHelp, onCloseModals }: Handlers) 
           break
         case '+':
         case '=':
-          store.nudgeSpeed(2)
+          store.stepRate(1)
           break
         case '-':
-          store.nudgeSpeed(0.5)
+          store.stepRate(-1)
           break
         case 'f':
           if (document.fullscreenElement) void document.exitFullscreen()

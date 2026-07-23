@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { ChevronRight, Crosshair, GitCompare, Lightbulb, Telescope, ZoomIn, ZoomOut } from 'lucide-react'
+import { ChevronRight, Crosshair, GitCompare, Lightbulb, Telescope } from 'lucide-react'
 import { PLANET_DATA, MOON_DATA } from '@/data/planets'
+import { MOON_PERIODS, PHYSICAL, TIDALLY_LOCKED } from '@/data/physical'
 import { EXOTIC_OBJECTS, GALAXIES, NEBULAE, STAR_CLUSTERS } from '@/data/universe'
 import type { Selection } from '@/data/types'
 import { ALL_FACTS, nextFactIndex } from '@/lib/facts'
-import { formatMeasurements, formatOrbitalPeriod } from '@/lib/format'
 import { useUniverseStore } from '@/store/useUniverseStore'
+import { PlanetDetails } from './PlanetDetails'
 import { Button, Stat } from './primitives'
 
 type Tab = 'body' | 'deepSpace' | 'facts'
@@ -56,65 +57,12 @@ function useSelectedRecord(selection: Selection | null) {
   }
 }
 
-function PlanetDetails({ id }: { id: string }) {
-  const data = PLANET_DATA[id]
-  const metric = useUniverseStore((s) => s.metricUnits)
-  const surfaceViewPlanet = useUniverseStore((s) => s.surfaceViewPlanet)
-  const toggleSurfaceView = useUniverseStore((s) => s.toggleSurfaceView)
-  const focusPlanet = useUniverseStore((s) => s.focusPlanet)
-
-  const m = formatMeasurements(data, metric)
-  const inSurfaceView = surfaceViewPlanet === id
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-xl font-semibold">{data.name}</h3>
-        <p className="text-sm text-[var(--panel-text-dim)]">{data.type}</p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-2">
-        <Button variant="primary" onClick={() => focusPlanet(id)}>
-          <Crosshair className="h-4 w-4" /> Focus
-        </Button>
-        <Button active={inSurfaceView} onClick={() => toggleSurfaceView(id)}>
-          {inSurfaceView ? <ZoomOut className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
-          {inSurfaceView ? 'Exit Surface' : 'Surface View'}
-        </Button>
-      </div>
-
-      <div>
-        <Stat label="Diameter" value={m.diameter} />
-        <Stat label="Mass" value={`${data.mass} kg`} />
-        <Stat label="Gravity" value={m.gravity} />
-        <Stat label="Distance from Sun" value={m.distance} />
-        <Stat label="Orbital Period" value={formatOrbitalPeriod(data.orbitalPeriod)} />
-        <Stat label="Moons" value={data.moons} />
-        <Stat label="Temperature" value={data.temperature} />
-        <Stat label="Day Length" value={data.dayLength} />
-      </div>
-
-      <p className="text-sm leading-relaxed text-[var(--panel-text-dim)]">{data.description}</p>
-
-      {data.facts.length > 0 && (
-        <div>
-          <h4 className="mb-1.5 text-xs font-semibold tracking-wide uppercase">Did you know?</h4>
-          <ul className="space-y-1 text-sm text-[var(--panel-text-dim)]">
-            {data.facts.map((fact) => (
-              <li key={fact} className="flex gap-2">
-                <span className="text-[var(--panel-accent)]">•</span>
-                {fact}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function MoonDetails({ id }: { id: string }) {
   const data = MOON_DATA[id]
+  const period = MOON_PERIODS[id]
+  const locked = TIDALLY_LOCKED.has(id)
+  const parent = PHYSICAL[data.parent]
+
   return (
     <div className="space-y-4">
       <div>
@@ -125,9 +73,32 @@ function MoonDetails({ id }: { id: string }) {
       </div>
       <div>
         <Stat label="Diameter" value={`${data.diameter.toLocaleString()} km`} />
-        <Stat label="Distance from planet" value={`${data.distanceFromPlanet.toLocaleString()} km`} />
-        <Stat label="Orbital Period" value={`${data.orbitalPeriod} days`} />
+        <Stat label="Radius vs Earth" value={`${(data.diameter / 2 / 6371).toFixed(3)} ×`} />
+        <Stat
+          label="Distance from planet"
+          value={`${data.distanceFromPlanet.toLocaleString()} km`}
+        />
+        {parent && (
+          <Stat
+            label="In planet radii"
+            value={`${(data.distanceFromPlanet / parent.radiusKm).toFixed(1)} ×`}
+          />
+        )}
+        <Stat
+          label="Orbital period"
+          value={`${Math.abs(period ?? data.orbitalPeriod).toFixed(3)} days${
+            (period ?? 0) < 0 ? ' (retrograde)' : ''
+          }`}
+        />
+        <Stat label="Rotation" value={locked ? 'Tidally locked' : 'Free'} />
       </div>
+      {locked && (
+        <p className="text-xs text-[var(--panel-text-dim)]">
+          Tidal locking means one rotation takes exactly one orbit, so the same face
+          always points at the planet — which is why the far side is never visible
+          from the surface.
+        </p>
+      )}
       <p className="text-sm leading-relaxed text-[var(--panel-text-dim)]">{data.description}</p>
     </div>
   )

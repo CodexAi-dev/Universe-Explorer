@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
+import { pointSprite } from '@/three/pointSprite'
 import { universeState, useUniverseStore } from '@/store/useUniverseStore'
 
 const COUNTS = { low: 1000, medium: 2000, high: 3000, ultra: 5000 } as const
@@ -36,7 +37,16 @@ export function AsteroidBelt() {
 
   return (
     <points ref={ref} geometry={geometry} visible={show}>
-      <pointsMaterial color={0x888888} size={0.3} sizeAttenuation />
+      <pointsMaterial
+        color={0x9a8f80}
+        size={0.45}
+        map={pointSprite()}
+        alphaMap={pointSprite()}
+        transparent
+        opacity={0.8}
+        depthWrite={false}
+        sizeAttenuation
+      />
     </points>
   )
 }

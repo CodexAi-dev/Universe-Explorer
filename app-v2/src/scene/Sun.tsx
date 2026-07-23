@@ -1,71 +1,33 @@
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import { PLANET_DATA } from '@/data/planets'
-import { createSolarProminence, createRealisticSunTexture } from '@/three/builders/sun'
+import { useTexture } from '@react-three/drei'
 import { createSunGlowTexture } from '@/three/builders/glows'
-import { surfaceTexture } from '@/three/textures'
+import { pointSprite } from '@/three/pointSprite'
+import { rotationAngleAt } from '@/three/simulation'
+import { bodyRadius } from '@/three/scale'
 import { useUniverseStore, universeState } from '@/store/useUniverseStore'
 
-const SUN = PLANET_DATA.sun
-
-/** Layered additive sprites, matching v1's `createEnhancedSunGlow`. */
-const GLOW_LAYERS: Array<{ intensity: number; inner: string; outer: string; scale: number }> = [
-  { intensity: 0.8, inner: '#ffffee', outer: '#ffaa00', scale: 50 },
-  { intensity: 0.5, inner: '#ffcc44', outer: '#ff6600', scale: 80 },
-  { intensity: 0.25, inner: '#ff8844', outer: '#ff2200', scale: 120 },
+/**
+ * Layered additive halo, sized in multiples of the drawn solar radius.
+ *
+ * Kept tight deliberately: the corona is only a couple of solar radii across
+ * in visible light, and a wide halo swallows the inner planets whenever the
+ * camera flies inside it.
+ */
+const GLOW_LAYERS = [
+  { intensity: 0.55, inner: '#ffffee', outer: '#ffaa00', scale: 1.45, opacity: 0.85 },
+  { intensity: 0.32, inner: '#ffcc44', outer: '#ff7700', scale: 2.1, opacity: 0.5 },
+  { intensity: 0.16, inner: '#ff9955', outer: '#ff3300', scale: 3.0, opacity: 0.28 },
 ]
 
-/** Corona streamers + prominences, built once as a plain Object3D. */
-function useCorona() {
-  return useMemo(() => {
-    const group = new THREE.Group()
-    group.name = 'corona'
-
-    for (let layer = 0; layer < 3; layer++) {
-      const streamerCount = 24 - layer * 6
-      for (let i = 0; i < streamerCount; i++) {
-        const angle = (i / streamerCount) * Math.PI * 2 + layer * 0.2
-        const length = (Math.random() * 8 + 4) * (1 - layer * 0.2)
-        const width = Math.random() * 0.5 + 0.2
-
-        const points: THREE.Vector3[] = []
-        for (let j = 0; j <= 20; j++) {
-          const t = j / 20
-          const r = SUN.size + t * length
-          const wobble = Math.sin(t * Math.PI * 3) * (1 - t) * 0.5
-          points.push(
-            new THREE.Vector3(
-              Math.cos(angle + wobble * 0.1) * r,
-              Math.sin(angle + wobble * 0.1) * r,
-              wobble,
-            ),
-          )
-        }
-
-        const curve = new THREE.CatmullRomCurve3(points)
-        const geometry = new THREE.TubeGeometry(curve, 20, width * (1 - layer * 0.3), 8, false)
-        const material = new THREE.MeshBasicMaterial({
-          color: new THREE.Color().setHSL(0.1, 0.8, 0.7 - layer * 0.15),
-          transparent: true,
-          opacity: 0.3 - layer * 0.08,
-          blending: THREE.AdditiveBlending,
-        })
-        group.add(new THREE.Mesh(geometry, material))
-      }
-    }
-
-    for (let i = 0; i < 5; i++) {
-      group.add(createSolarProminence(Math.random() * Math.PI * 2))
-    }
-
-    return group
-  }, [])
-}
-
-/** Radially streaming particles reset once they pass 150 units out. */
-function SolarWind() {
+/**
+ * Radially streaming particles — the solar wind, which really does blow past
+ * Earth at 400–750 km/s and drives comet ion tails away from the Sun.
+ */
+function SolarWind({ radius }: { radius: number }) {
   const ref = useRef<THREE.Points>(null!)
+  const reach = radius * 7.5
 
   const { geometry, velocities } = useMemo(() => {
     const count = 2000
@@ -76,7 +38,7 @@ function SolarWind() {
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2
       const phi = Math.acos(2 * Math.random() - 1)
-      const r = SUN.size + Math.random() * 100
+      const r = radius + Math.random() * reach
 
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta)
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
@@ -95,23 +57,24 @@ function SolarWind() {
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     return { geometry: geo, velocities: vel }
-  }, [])
+  }, [radius, reach])
 
-  useFrame((_, delta) => {
+  useFrame((_, rawDelta) => {
     if (!universeState().isPlaying) return
+    const delta = Math.min(rawDelta, 0.1)
     const attr = ref.current.geometry.attributes.position as THREE.BufferAttribute
     const p = attr.array as Float32Array
+    const limit = radius + reach
 
     for (let i = 0; i < p.length / 3; i++) {
       p[i * 3] += velocities[i * 3] * delta * 50
       p[i * 3 + 1] += velocities[i * 3 + 1] * delta * 50
       p[i * 3 + 2] += velocities[i * 3 + 2] * delta * 50
 
-      const dist = Math.hypot(p[i * 3], p[i * 3 + 1], p[i * 3 + 2])
-      if (dist > 150) {
+      if (Math.hypot(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]) > limit) {
         const theta = Math.random() * Math.PI * 2
         const phi = Math.acos(2 * Math.random() - 1)
-        const r = SUN.size + Math.random() * 5
+        const r = radius * 1.02
         p[i * 3] = r * Math.sin(phi) * Math.cos(theta)
         p[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta)
         p[i * 3 + 2] = r * Math.cos(phi)
@@ -123,11 +86,14 @@ function SolarWind() {
   return (
     <points ref={ref} geometry={geometry}>
       <pointsMaterial
-        size={0.5}
+        size={radius * 0.05}
+        map={pointSprite()}
+        alphaMap={pointSprite()}
         vertexColors
         transparent
-        opacity={0.4}
+        opacity={0.22}
         blending={THREE.AdditiveBlending}
+        depthWrite={false}
         sizeAttenuation
       />
     </points>
@@ -135,18 +101,22 @@ function SolarWind() {
 }
 
 export function Sun() {
-  const sunRef = useRef<THREE.Mesh>(null!)
-  const corona = useCorona()
+  const spinRef = useRef<THREE.Mesh>(null!)
 
+  const sizeMode = useUniverseStore((s) => s.sizeMode)
+  const quality = useUniverseStore((s) => s.quality)
   const select = useUniverseStore((s) => s.select)
   const focusPlanet = useUniverseStore((s) => s.focusPlanet)
   const setHovered = useUniverseStore((s) => s.setHovered)
-  const inSurfaceView = useUniverseStore((s) => s.surfaceViewPlanet === 'sun')
 
-  const map = useMemo(
-    () => (inSurfaceView ? (surfaceTexture('sun') ?? createRealisticSunTexture()) : createRealisticSunTexture()),
-    [inSurfaceView],
-  )
+  const radius = bodyRadius('sun', sizeMode)
+  const segments = quality === 'low' ? 32 : quality === 'ultra' ? 128 : 64
+
+  const map = useTexture('./textures/2k_sun.jpg')
+  useMemo(() => {
+    map.colorSpace = THREE.SRGBColorSpace
+    map.anisotropy = 8
+  }, [map])
 
   const glows = useMemo(
     () =>
@@ -157,21 +127,16 @@ export function Sun() {
     [],
   )
 
-  useFrame((_, delta) => {
-    const { isPlaying, timeSpeed } = universeState()
-    if (!isPlaying) return
-    // v1 advanced these per-frame; scaling by delta*60 keeps the same visual
-    // rate while making it independent of the display refresh rate.
-    const step = delta * 60
-    sunRef.current.rotation.y += 0.001 * timeSpeed * step
-    corona.rotation.z += 0.0002 * timeSpeed * step
+  useFrame(() => {
+    // The Sun's equator turns once every 25.4 days — it is not a solid body,
+    // so the poles take about 34. This uses the equatorial rate.
+    spinRef.current.rotation.y = rotationAngleAt('sun', universeState().simulationTime)
   })
 
   return (
-    <>
+    <group name="sun">
       <mesh
-        ref={sunRef}
-        name="sun"
+        ref={spinRef}
         userData={{ kind: 'planet', id: 'sun' }}
         onPointerOver={(e) => {
           e.stopPropagation()
@@ -191,24 +156,26 @@ export function Sun() {
           focusPlanet('sun')
         }}
       >
-        <sphereGeometry args={[SUN.size, 128, 128]} />
-        <meshBasicMaterial map={map} />
-
-        {glows.map((g, i) => (
-          <sprite key={i} scale={[g.scale, g.scale, 1]}>
-            <spriteMaterial
-              map={g.map}
-              transparent
-              blending={THREE.AdditiveBlending}
-              depthWrite={false}
-            />
-          </sprite>
-        ))}
-
-        <primitive object={corona} />
+        <sphereGeometry args={[radius, segments, segments / 2]} />
+        {/* Unlit: the Sun emits rather than reflects. */}
+        <meshBasicMaterial map={map} toneMapped={false} />
       </mesh>
 
-      <SolarWind />
-    </>
+      {glows.map((g, i) => (
+        <sprite key={i} scale={[radius * g.scale, radius * g.scale, 1]}>
+          <spriteMaterial
+            map={g.map}
+            transparent
+            opacity={g.opacity}
+            blending={THREE.AdditiveBlending}
+            // Depth-tested but not depth-writing, so a planet transiting in
+            // front of the Sun correctly occludes the halo behind it.
+            depthWrite={false}
+          />
+        </sprite>
+      ))}
+
+      <SolarWind radius={radius} />
+    </group>
   )
 }

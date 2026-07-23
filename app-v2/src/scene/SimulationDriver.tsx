@@ -1,63 +1,53 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { moons, planetPositions, planets } from '@/three/simulation'
+import { updateBodies } from '@/three/simulation'
 import { universeState, useUniverseStore } from '@/store/useUniverseStore'
 
-/** Simulated ms per real second at 1x speed — one day per two seconds. */
 const MS_PER_DAY = 86_400_000
 
 /**
- * Single frame loop for the whole orbital simulation.
+ * Single frame loop for the whole simulation.
  *
- * Every body is advanced here rather than in its own `useFrame`, so animation
- * mutates Object3Ds directly and never causes a React render. Simulation time
- * and FPS are pushed into the store on a 1 Hz tick, which is the only rate the
- * UI actually needs.
+ * Holds the authoritative simulation clock as a ref and advances it by real
+ * elapsed time × the speed multiplier, then asks `updateBodies` to place
+ * everything for that instant. Because positions are *computed* from the
+ * clock rather than integrated, changing speed or reversing never drifts.
+ *
+ * React state is written on a 1 Hz tick — the fastest the readouts need.
  */
 export function SimulationDriver() {
+  const clock = useRef(useUniverseStore.getState().simulationTime)
   const frames = useRef(0)
   const lastReport = useRef(performance.now())
-  const pendingTime = useRef(0)
 
-  const setFps = useUniverseStore((s) => s.set)
-  const advanceTime = useUniverseStore((s) => s.advanceTime)
+  const setValue = useUniverseStore((s) => s.set)
+
+  // Jumping to a date (Reset to today) must move the authoritative clock too.
+  useEffect(
+    () =>
+      useUniverseStore.subscribe(
+        (s) => s.timeEpoch,
+        () => {
+          clock.current = useUniverseStore.getState().simulationTime
+        },
+      ),
+    [],
+  )
 
   useFrame((_, rawDelta) => {
-    // Clamp so a backgrounded tab doesn't teleport every planet on return.
+    // Clamp so a backgrounded tab doesn't jump the simulation by minutes.
     const delta = Math.min(rawDelta, 0.1)
-    const { isPlaying, timeSpeed } = universeState()
+    const { isPlaying, timeSpeed, distanceMode, sizeMode } = universeState()
 
-    if (isPlaying) {
-      const timeMultiplier = delta * timeSpeed * 0.5
-      pendingTime.current += timeSpeed * MS_PER_DAY * delta
+    if (isPlaying) clock.current += timeSpeed * MS_PER_DAY * delta
 
-      for (const [, body] of planets) {
-        body.angle += (body.orbitSpeed / 100) * timeMultiplier
-        body.object.position.x = Math.cos(body.angle) * body.orbitRadius
-        body.object.position.z = Math.sin(body.angle) * body.orbitRadius
-        body.object.rotation.y += (body.rotationSpeed / 100) * timeMultiplier
-      }
-
-      for (const [, body] of moons) {
-        body.angle += (body.orbitSpeed / 100) * timeMultiplier
-        body.object.position.x = Math.cos(body.angle) * body.orbitRadius
-        body.object.position.z = Math.sin(body.angle) * body.orbitRadius
-      }
-    }
-
-    // Publish world positions for satellites/labels regardless of play state.
-    for (const [name, body] of planets) {
-      planetPositions.get(name)?.copy(body.object.position)
-    }
+    updateBodies(clock.current, { distanceMode, sizeMode })
 
     frames.current++
     const now = performance.now()
     if (now - lastReport.current >= 1000) {
-      setFps('fps', frames.current)
-      if (pendingTime.current !== 0) {
-        advanceTime(pendingTime.current)
-        pendingTime.current = 0
-      }
+      setValue('fps', frames.current)
+      setValue('simulationTime', clock.current)
       frames.current = 0
       lastReport.current = now
     }

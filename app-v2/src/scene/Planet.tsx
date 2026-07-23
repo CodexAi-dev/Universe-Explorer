@@ -1,62 +1,130 @@
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { useFrame } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
-import { MOON_DATA } from '@/data/planets'
+import { useTexture } from '@react-three/drei'
+import { MOON_DATA, PLANET_DATA } from '@/data/planets'
+import { PHYSICAL } from '@/data/physical'
 import type { PlanetData } from '@/data/types'
-import { planetTexture, ringTexture, surfaceTexture } from '@/three/textures'
-import { randomAngle, registerPlanet } from '@/three/simulation'
+import { planetTexture, surfaceTexture } from '@/three/textures'
+import { registerPlanet, sunDirectionFor } from '@/three/simulation'
+import { bodyRadius } from '@/three/scale'
 import { useUniverseStore } from '@/store/useUniverseStore'
 import { Label } from './Label'
 import { Moon } from './Moon'
+import { Atmosphere, EarthSurfaceMaterial } from './materials/EarthMaterial'
+import { SaturnRings, UranusRings } from './Rings'
+
+/** Sphere tessellation per quality tier. */
+const SEGMENTS = { low: 24, medium: 40, high: 64, ultra: 96 } as const
+
+/**
+ * Real observational maps. Pluto keeps its procedural texture — the only
+ * global New Horizons mosaics available are non-redistributable, and a
+ * fabricated map would undercut the point of the exercise.
+ */
+const TEXTURE_URL: Record<string, string> = {
+  mercury: './textures/2k_mercury.jpg',
+  venus: './textures/2k_venus_surface.jpg',
+  mars: './textures/2k_mars.jpg',
+  jupiter: './textures/2k_jupiter.jpg',
+  saturn: './textures/2k_saturn.jpg',
+  uranus: './textures/2k_uranus.jpg',
+  neptune: './textures/2k_neptune.jpg',
+}
+
+/** Roughness/metalness tuned per body type, not per-planet guesswork. */
+function surfaceResponse(id: string) {
+  const physical = PHYSICAL[id]
+  // Gas and ice giants read as soft cloud decks; rocky bodies are matte dust.
+  const gaseous = ['jupiter', 'saturn', 'uranus', 'neptune'].includes(id)
+  return {
+    roughness: gaseous ? 0.72 : 0.92,
+    metalness: 0.0,
+    // Bright, highly reflective bodies (Venus, Enceladus-like ices) need less
+    // ambient lift than dark ones (Mercury reflects under 9% of what hits it).
+    ambient: 0.035 + (1 - (physical?.albedo ?? 0.3)) * 0.03,
+  }
+}
+
+/** Bodies whose real texture we have; others fall back to procedural. */
+function useBodyTexture(id: string, inSurfaceView: boolean) {
+  const url = TEXTURE_URL[id]
+  const real = useTexture(url ? [url] : [])
+
+  return useMemo(() => {
+    if (inSurfaceView) {
+      const detailed = surfaceTexture(id)
+      if (detailed) return detailed
+    }
+    if (real.length > 0) {
+      const texture = real[0]
+      texture.colorSpace = THREE.SRGBColorSpace
+      texture.anisotropy = 8
+      return texture
+    }
+    return planetTexture(id, PLANET_DATA[id])
+  }, [id, inSurfaceView, real])
+}
 
 interface PlanetProps {
   id: string
   data: PlanetData
 }
 
-/** Sphere tessellation per quality tier, matching v1's `createPlanet`. */
-const SEGMENTS = { low: 24, medium: 32, high: 48, ultra: 64 } as const
-
 export function Planet({ id, data }: PlanetProps) {
-  const ref = useRef<THREE.Group>(null!)
+  const orbitGroup = useRef<THREE.Group>(null!)
+  const spinGroup = useRef<THREE.Group>(null!)
+  const cloudRef = useRef<THREE.Mesh>(null!)
 
   const quality = useUniverseStore((s) => s.quality)
+  const sizeMode = useUniverseStore((s) => s.sizeMode)
   const showLabels = useUniverseStore((s) => s.showLabels)
   const showPluto = useUniverseStore((s) => s.showPluto)
+  const showClouds = useUniverseStore((s) => s.showClouds)
+  const showAtmospheres = useUniverseStore((s) => s.showAtmospheres)
   const surfaceViewPlanet = useUniverseStore((s) => s.surfaceViewPlanet)
   const select = useUniverseStore((s) => s.select)
   const focusPlanet = useUniverseStore((s) => s.focusPlanet)
   const setHovered = useUniverseStore((s) => s.setHovered)
 
+  const physical = PHYSICAL[id]
+  const radius = bodyRadius(id, sizeMode)
   const segments = SEGMENTS[quality]
   const inSurfaceView = surfaceViewPlanet === id
 
-  // Surface View swaps in the 2048² texture; normal zoom uses the 512×256 one.
-  const map = useMemo(
-    () => (inSurfaceView ? (surfaceTexture(id) ?? planetTexture(id, data)) : planetTexture(id, data)),
-    [id, data, inSurfaceView],
-  )
+  const map = useBodyTexture(id, inSurfaceView)
+  const response = surfaceResponse(id)
+
+  // Live Sun direction, in this planet's local (tilted) frame.
+  const sunDirection = useMemo(() => new THREE.Vector3(1, 0, 0), [])
+  const worldSun = useMemo(() => new THREE.Vector3(), [])
 
   const moons = useMemo(
     () => Object.entries(MOON_DATA).filter(([, m]) => m.parent === id),
     [id],
   )
 
-  useEffect(() => {
-    const angle = randomAngle()
-    ref.current.position.set(
-      Math.cos(angle) * data.orbitRadius!,
-      0,
-      Math.sin(angle) * data.orbitRadius!,
+  useEffect(
+    () => registerPlanet(id, { object: orbitGroup.current, spin: spinGroup.current }),
+    [id],
+  )
+
+  useFrame(() => {
+    sunDirectionFor(id, worldSun)
+    // Undo the tilt+spin so the shader sees the Sun in texture space.
+    sunDirection.copy(worldSun)
+    spinGroup.current?.worldToLocal(
+      sunDirection.add(orbitGroup.current.position),
     )
-    return registerPlanet(id, {
-      object: ref.current,
-      angle,
-      orbitRadius: data.orbitRadius!,
-      orbitSpeed: data.orbitSpeed!,
-      rotationSpeed: data.rotationSpeed!,
-    })
-  }, [id, data.orbitRadius, data.orbitSpeed, data.rotationSpeed])
+    sunDirection.normalize()
+
+    // Venus's clouds superrotate: they lap the solid planet every ~4 days
+    // while the surface takes 243. Earth's drift far more gently.
+    if (cloudRef.current) {
+      cloudRef.current.rotation.y += id === 'venus' ? 0.0018 : 0.00022
+    }
+  })
 
   const onPointerOver = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
@@ -69,84 +137,126 @@ export function Planet({ id, data }: PlanetProps) {
     setHovered(null)
   }
 
-  const ringMap = data.hasRings ? ringTexture(id) : null
-
-  /**
-   * RingGeometry's default UVs are square-projected, which smears a band
-   * texture. Remap u to normalised radius so bands run concentrically.
-   */
-  const ringGeometry = useMemo(() => {
-    if (!data.hasRings) return null
-    const inner = data.size * 1.4
-    const outer = data.size * 2.4
-    const geometry = new THREE.RingGeometry(inner, outer, 64)
-    const pos = geometry.attributes.position
-    const uv = geometry.attributes.uv
-    for (let i = 0; i < pos.count; i++) {
-      const dist = Math.hypot(pos.getX(i), pos.getY(i))
-      uv.setXY(i, (dist - inner) / (outer - inner), 0.5)
-    }
-    return geometry
-  }, [data.hasRings, data.size])
+  const isEarth = id === 'earth'
+  const hasClouds = isEarth || id === 'venus'
 
   return (
-    <group ref={ref} name={id} visible={id !== 'pluto' || showPluto}>
-      {/* Axial tilt applies to the body and its rings, not the orbit. */}
-      <group rotation={[0, 0, THREE.MathUtils.degToRad(data.axialTilt)]}>
-        <mesh
-          userData={{ kind: 'planet', id }}
-          onPointerOver={onPointerOver}
-          onPointerOut={onPointerOut}
-          onClick={(e) => {
-            e.stopPropagation()
-            select({ kind: 'planet', id })
-          }}
-          onDoubleClick={(e) => {
-            e.stopPropagation()
-            focusPlanet(id)
-          }}
-        >
-          <sphereGeometry args={[data.size, segments, segments]} />
-          <meshStandardMaterial
-            map={map}
-            roughness={0.8}
-            metalness={0.1}
-            {...(inSurfaceView ? { bumpMap: map, bumpScale: 0.02 } : {})}
-          />
-        </mesh>
-
-        {data.atmosphere && (
-          <mesh>
-            <sphereGeometry args={[data.size * 1.05, 32, 32]} />
-            <meshBasicMaterial
-              color={data.atmosphereColor}
-              transparent
-              opacity={0.2}
-              side={THREE.BackSide}
-            />
-          </mesh>
-        )}
-
-        {ringMap && ringGeometry && (
+    <group ref={orbitGroup} name={id} visible={id !== 'pluto' || showPluto}>
+      {/*
+        Obliquity is applied outside the spin group so the axis stays fixed in
+        space as the planet turns — that fixed tilt is what produces seasons.
+        Uranus's 97.8° puts its poles nearly in the orbital plane.
+      */}
+      <group rotation={[0, 0, THREE.MathUtils.degToRad(physical?.obliquityDeg ?? 0)]}>
+        <group ref={spinGroup}>
           <mesh
-            geometry={ringGeometry}
-            rotation={[Math.PI / 2, id === 'uranus' ? Math.PI / 2 : 0, 0]}
+            userData={{ kind: 'planet', id }}
+            castShadow={quality === 'high' || quality === 'ultra'}
+            receiveShadow={quality === 'high' || quality === 'ultra'}
+            onPointerOver={onPointerOver}
+            onPointerOut={onPointerOut}
+            onClick={(e) => {
+              e.stopPropagation()
+              select({ kind: 'planet', id })
+            }}
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              focusPlanet(id)
+            }}
           >
-            <meshBasicMaterial
-              map={ringMap}
-              side={THREE.DoubleSide}
-              transparent
-              opacity={id === 'saturn' ? 0.9 : 0.4}
-            />
+            <sphereGeometry args={[radius, segments, segments / 2]} />
+            {isEarth ? (
+              <EarthSurfaceMaterial sunDirection={sunDirection} />
+            ) : (
+              <meshStandardMaterial
+                map={map}
+                roughness={response.roughness}
+                metalness={response.metalness}
+                emissive={new THREE.Color(0x222233)}
+                emissiveIntensity={response.ambient}
+              />
+            )}
           </mesh>
-        )}
+
+          {hasClouds && showClouds && (
+            <mesh ref={cloudRef} scale={radius * 1.012}>
+              <sphereGeometry args={[1, segments, segments / 2]} />
+              <CloudMaterial id={id} />
+            </mesh>
+          )}
+        </group>
+
+        {id === 'saturn' && <SaturnRings radius={radius} segments={segments} />}
+        {id === 'uranus' && <UranusRings radius={radius} />}
       </group>
+
+      {physical?.hasAtmosphere && showAtmospheres && !inSurfaceView && (
+        <Atmosphere
+          radius={radius * 1.035}
+          color={ATMOSPHERE_COLOR[id] ?? 0x88bbff}
+          sunDirection={worldSun}
+          intensity={ATMOSPHERE_INTENSITY[id] ?? 0.7}
+          segments={Math.max(24, segments / 2)}
+        />
+      )}
 
       {moons.map(([moonId, moonData]) => (
         <Moon key={moonId} id={moonId} data={moonData} />
       ))}
 
-      <Label text={data.name} y={data.size + 3} scale={[10, 2.5]} visible={showLabels} />
+      <Label
+        text={data.name}
+        y={radius * 1.45}
+        scale={[10, 2.5]}
+        visible={showLabels}
+      />
     </group>
+  )
+}
+
+/** Rim colours reflect what each atmosphere actually scatters. */
+const ATMOSPHERE_COLOR: Record<string, number> = {
+  venus: 0xe8d9a0, // thick CO₂ haze, pale yellow
+  earth: 0x6ba8ff, // Rayleigh scattering, blue
+  mars: 0xd88a5a, // thin and dusty, butterscotch
+  jupiter: 0xe0c9a0,
+  saturn: 0xf0dcae,
+  uranus: 0x9fe3f0, // methane absorbs red
+  neptune: 0x6f8fff,
+  pluto: 0x9aa8c0,
+}
+
+const ATMOSPHERE_INTENSITY: Record<string, number> = {
+  venus: 1.5, // 92 bar — by far the densest of the rocky planets
+  earth: 1.0,
+  mars: 0.35, // 0.6% of Earth's pressure
+  jupiter: 0.55,
+  saturn: 0.5,
+  uranus: 0.6,
+  neptune: 0.6,
+  pluto: 0.25,
+}
+
+function CloudMaterial({ id }: { id: string }) {
+  const url =
+    id === 'venus' ? './textures/2k_venus_atmosphere.jpg' : './textures/2k_earth_clouds.jpg'
+  const texture = useTexture(url)
+
+  useMemo(() => {
+    texture.colorSpace = THREE.SRGBColorSpace
+    texture.anisotropy = 8
+  }, [texture])
+
+  return (
+    <meshStandardMaterial
+      map={texture}
+      // The cloud maps are greyscale-on-black, so the map doubles as its own
+      // opacity mask — bright cloud stays, black sky drops out.
+      alphaMap={texture}
+      transparent
+      opacity={id === 'venus' ? 0.95 : 0.75}
+      depthWrite={false}
+      roughness={1}
+    />
   )
 }
