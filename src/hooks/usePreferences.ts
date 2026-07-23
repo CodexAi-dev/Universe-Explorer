@@ -11,6 +11,7 @@ interface StoredPrefs {
   metricUnits: boolean
   advancedMode: boolean
   quality: Quality
+  useUtc: boolean
 }
 
 /**
@@ -31,6 +32,7 @@ export function usePreferences() {
         if (typeof prefs.highContrast === 'boolean') store.set('highContrast', prefs.highContrast)
         if (typeof prefs.metricUnits === 'boolean') store.set('metricUnits', prefs.metricUnits)
         if (typeof prefs.advancedMode === 'boolean') store.set('advancedMode', prefs.advancedMode)
+        if (typeof prefs.useUtc === 'boolean') store.set('useUtc', prefs.useUtc)
       }
     } catch {
       // A corrupt or blocked localStorage just means defaults.
@@ -44,6 +46,7 @@ export function usePreferences() {
         metricUnits: s.metricUnits,
         advancedMode: s.advancedMode,
         quality: s.quality,
+        useUtc: s.useUtc,
       }),
       (prefs) => {
         try {

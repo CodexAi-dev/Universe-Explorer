@@ -40,22 +40,77 @@ export function formatMeasurements(
 }
 
 /** Simulation clock date, e.g. "March 14, 2026". */
-export function formatSimulationDate(ms: number): string {
+export function formatSimulationDate(ms: number, utc = false): string {
   return new Date(ms).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'UTC',
+    ...(utc ? { timeZone: 'UTC' } : {}),
   })
 }
 
-/** Date and time of day, split so they can be styled separately. */
-export function formatSimulationClock(ms: number): { date: string; time: string } {
+/**
+ * Date and time of day, split so they can be styled separately.
+ *
+ * Defaults to the viewer's own timezone: a clock that disagrees with the one
+ * on your wall reads as broken, whatever label sits next to it. UTC stays
+ * available because it is what astronomy is actually quoted in.
+ */
+export function formatSimulationClock(
+  ms: number,
+  utc = false,
+): { date: string; time: string; zone: string } {
   const d = new Date(ms)
-  return {
-    date: formatSimulationDate(ms),
-    time: d.toISOString().slice(11, 16),
+
+  if (utc) {
+    return {
+      date: formatSimulationDate(ms, true),
+      time: d.toISOString().slice(11, 16),
+      zone: 'UTC',
+    }
   }
+
+  return {
+    date: formatSimulationDate(ms, false),
+    time: d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+    zone: localZoneLabel(),
+  }
+}
+
+/** Short label for the viewer's timezone, e.g. "GMT+5:30". */
+function localZoneLabel(): string {
+  const offsetMinutes = -new Date().getTimezoneOffset()
+  const sign = offsetMinutes < 0 ? '-' : '+'
+  const hours = Math.floor(Math.abs(offsetMinutes) / 60)
+  const minutes = Math.abs(offsetMinutes) % 60
+  return `GMT${sign}${hours}${minutes ? `:${String(minutes).padStart(2, '0')}` : ''}`
+}
+
+/** Offset below which the clock counts as live rather than drifted. */
+const LIVE_TOLERANCE_SECONDS = 5
+
+/**
+ * How far the simulated clock sits from the real one, as a short label.
+ * Returns null while the two agree closely enough to call it live.
+ */
+export function formatDrift(simulationMs: number, realMs: number): string | null {
+  const deltaSeconds = (simulationMs - realMs) / 1000
+  const magnitude = Math.abs(deltaSeconds)
+
+  /*
+    The clock is published once a second, and a slow renderer stretches that
+    to a few, so a small offset is sampling jitter rather than real drift.
+    Anything the user actually caused — pausing, scrubbing, speeding up —
+    lands far outside this window.
+  */
+  if (magnitude < LIVE_TOLERANCE_SECONDS) return null
+
+  const sign = deltaSeconds < 0 ? '−' : '+'
+  if (magnitude < 90) return `${sign}${Math.round(magnitude)}s`
+  if (magnitude < 5400) return `${sign}${Math.round(magnitude / 60)}m`
+  if (magnitude < 172_800) return `${sign}${Math.round(magnitude / 3600)}h`
+  if (magnitude < 63_072_000) return `${sign}${Math.round(magnitude / 86_400)}d`
+  return `${sign}${(magnitude / 31_557_600).toFixed(1)}y`
 }
 
 /**
@@ -70,14 +125,23 @@ export function formatRate(daysPerSecond: number): string {
   const days = Math.abs(daysPerSecond)
   const seconds = days * 86_400
 
+  /*
+    Boundaries sit exactly on the unit, not slightly past it. Rounding them up
+    (90s, 5400s) meant a rate of one hour per second printed as "60 min/s" —
+    correct, but not what anyone would write.
+  */
+  /** "1 hour/s" but "10 hours/s". */
+  const unit = (value: number, name: string) =>
+    `${sign}${round1(value)} ${name}${round1(value) === '1' ? '' : 's'}/s`
+
   if (seconds < 1.5) return `${sign}Real time`
-  if (seconds < 90) return `${sign}${Math.round(seconds)} sec/s`
-  if (seconds < 5400) return `${sign}${Math.round(seconds / 60)} min/s`
-  if (days < 0.9) return `${sign}${Math.round(seconds / 3600)} hour/s`
-  if (days < 6.5) return `${sign}${round1(days)} day/s`
-  if (days < 28) return `${sign}${round1(days / 7)} week/s`
-  if (days < 300) return `${sign}${round1(days / 30.44)} month/s`
-  return `${sign}${round1(days / 365.25)} year/s`
+  if (seconds < 60) return `${sign}${Math.round(seconds)} sec/s`
+  if (seconds < 3600) return unit(seconds / 60, 'min')
+  if (days < 1) return unit(seconds / 3600, 'hour')
+  if (days < 7) return unit(days, 'day')
+  if (days < 30.44) return unit(days / 7, 'week')
+  if (days < 365.25) return unit(days / 30.44, 'month')
+  return unit(days / 365.25, 'year')
 }
 
 const round1 = (value: number) =>

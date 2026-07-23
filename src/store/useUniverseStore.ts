@@ -20,7 +20,13 @@ export const TIME_RATES = [
   { days: 3652.5, label: '10 years/s' },
 ] as const
 
-export const DEFAULT_RATE_INDEX = 3 // 1 day/s
+/*
+  Opens at real time so the clock on screen agrees with the clock on the wall.
+  Nothing visibly moves at 1x, which is the honest starting point: the user
+  speeds time up deliberately, and the drift badge then makes it obvious the
+  displayed moment is no longer now.
+*/
+export const DEFAULT_RATE_INDEX = 0 // real time
 export type Theme = 'space' | 'light' | 'dark'
 export type TextSize = 'small' | 'medium' | 'large'
 export type CameraViewMode = '3d' | 'top' | 'side'
@@ -60,6 +66,8 @@ export interface UniverseState {
   simulationTime: number
   /** Bumped whenever the clock is jumped, so the driver reseeds. */
   timeEpoch: number
+  /** Show the simulated clock in UTC rather than the viewer's own timezone. */
+  useUtc: boolean
 
   // ---- scale
   distanceMode: DistanceMode
@@ -147,6 +155,7 @@ export const useUniverseStore = create<UniverseState>()(
     timeSpeed: TIME_RATES[DEFAULT_RATE_INDEX].days,
     simulationTime: Date.now(),
     timeEpoch: 0,
+    useUtc: false,
 
     distanceMode: 'compressed',
     sizeMode: 'enhanced',
