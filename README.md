@@ -1,7 +1,12 @@
-# Universe Explorer — v2
+# Universe Explorer
 
-A rebuild of the original Universe Explorer on a modern stack, driven by real
-astronomical data. The v1 app is still in the repository root and still runs.
+An interactive 3D Solar System built for teaching, driven by real
+astronomical data.
+
+The original no-build version is archived under [`legacy-v1/`](legacy-v1/) and
+still runs by opening `legacy-v1/index.html` — but it is frozen, pinned to a
+three.js release whose loading path no longer exists upstream. New work goes
+here.
 
 ## What is real
 
@@ -63,19 +68,30 @@ npm test           # validate the ephemeris against known astronomy
 
 ### Serving from XAMPP
 
-`vite.config.ts` sets `base: './'`, so the build is path-independent. Copy
-`dist/` anywhere under `htdocs` and open it — no Apache config needed.
+`vite.config.ts` sets `base: './'`, so the build is path-independent — no
+Apache config needed.
+
+```bash
+npm run build
+```
+
+Then open **<http://localhost/Universe/dist/>**.
+
+Note that `http://localhost/Universe/` itself will *not* work: the `index.html`
+at the root is the Vite source entry, which points at `/src/main.tsx` and needs
+the dev server to resolve. Use `npm run dev` while developing, and `dist/` for
+anything you want Apache to serve.
 
 ## Why this shape
 
-The v1 app was one 4,600-line `SolarSystem` class plus a 1,150-line
+The original was one 4,600-line `SolarSystem` class plus a 1,150-line
 `UIController`, loading three.js **r128** through the legacy global `<script>`
-path. That loading path was removed from three.js after r147, so v1 was pinned
+path. That loading path was removed from three.js after r147, so it was pinned
 to a dead branch and could not take any upstream fix.
 
-The port keeps v1's visual identity — every procedural texture, particle
-construction and orbital formula is carried over — while splitting the
-monolith into layers:
+The rewrite keeps the original's visual identity — every procedural texture and
+particle construction is carried over — while splitting the monolith into
+layers:
 
 ```
 src/
