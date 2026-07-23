@@ -82,6 +82,30 @@ at the root is the Vite source entry, which points at `/src/main.tsx` and needs
 the dev server to resolve. Use `npm run dev` while developing, and `dist/` for
 anything you want Apache to serve.
 
+### Deploying to Vercel
+
+Import the repository at [vercel.com/new](https://vercel.com/new) and accept
+the defaults — `vercel.json` already sets framework, build command and output
+directory. Pushes to `main` redeploy automatically.
+
+`vercel.json` is strict JSON with no comment support and rejects unknown keys,
+so the reasoning behind it lives here:
+
+- **`/assets/*` — cached for a year, immutable.** Vite fingerprints these
+  filenames, so a rebuild produces a new URL and there is never anything to
+  invalidate.
+- **`/textures/*` — one week, with `stale-while-revalidate`.** These 7 MB of
+  planetary maps are copied verbatim from `public/`, so their names are stable
+  but *not* fingerprinted. Freezing them for a year would strand any future
+  texture swap behind a cache you cannot bust.
+- **No SPA catch-all rewrite.** There is no client-side routing here, and a
+  catch-all would turn a missing texture into a silent `200` serving
+  `index.html` instead of an honest `404`.
+
+First load pulls roughly 7 MB of textures. That is comfortable on desktop and
+slow on mobile data; dropping to 1K maps would cut it to about a quarter with
+little visible difference at these on-screen sizes.
+
 ## Why this shape
 
 The original was one 4,600-line `SolarSystem` class plus a 1,150-line
